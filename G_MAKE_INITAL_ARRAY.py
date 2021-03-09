@@ -200,7 +200,9 @@ def processonesample(starttime,my_files):
     #print('done saving channels')
 
     
-    #####NEED TO MAKE THIS A SEPARATE PART NO IN processonesample and maybe rename processonesample to onesampleCDF SO IF I HAVE TO PROCESS .NC FILES AT DIFFERENT ITMES CUZ MISSIGN DATA I CAN STILL THEN MAKE THE NEEDED ARRAY
+    #####NEED TO MAKE THIS A SEPARATE PART NOT IN processonesample and rename processonesample to onesampleCDF 
+    #then a processonesample would run both of these or i would run which i need  onesampleCDF or onesampleARRAY if only need one
+    ##SO IF I HAVE TO PROCESS .NC FILES AT DIFFERENT TIMES CUZ MISSING DATA I CAN STILL THEN MAKE THE NEEDED ARRAY
     
 #def processonesamplearray (starttime,my_files)
     #upload raw and colocated data files # may not need raw anymore were needed for initial validation of code 
