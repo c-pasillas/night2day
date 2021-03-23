@@ -182,7 +182,7 @@ def onesampleCDF (starttime, my_files):
     #now resample the Mband to the DNB with a new "Scene" role
     print('starting resampling of Mbands to DNB')
     Mband_resample_scn=original_scn.resample(original_scn['DNB'].attrs['area'], resampler='nearest')
-    Mband_resample_scn=resample.resample(
+    #Mband_resample_scn=resample.resample(
 
     print('these are the colocated Mband shapes')
     print(Mband_resample_scn['M12'].shape)
@@ -203,7 +203,7 @@ def onesampleCDF (starttime, my_files):
     print('done saving', starttime, 'channels in netCDF files')
 
     
-def onesamplearray (starttime,my_files)
+def onesamplearray (starttime,my_files):
     #upload raw and colocated data files # may not need raw anymore were needed for initial validation of code 
     rawM16=Dataset(spath2 + "ORIGINAL_M16_" + starttime + ".nc")
     rawM15=Dataset(spath2 + "ORIGINAL_M15_" + starttime + ".nc")
@@ -290,7 +290,7 @@ def onesamplearray (starttime,my_files)
 #  pull out the group of files that occur at the same time "sampleset" 
 # to run through the colocation and channel combining process for each timestep
 def processonesample(starttime,myfiles):
-    x = onesamplearray(onesampleCDF(starttime,myfiles))
+    x = onesamplearray(onesampleCDF(starttime,my_files))
 
 #processes all the samples in the case that have the full data
 def processallsamples(sampleset,limit=None):
@@ -333,6 +333,6 @@ def main():
 
 
 if __name__ == "__main__":
-    #main()
-    find_timesteps()
+    main()
+    #find_timesteps()
 
