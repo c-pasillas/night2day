@@ -1,10 +1,16 @@
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Mar 23 14:33:05 2021
+
+@author: cpasilla
+"""
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jan 14 13:55:46 2021
-#edited paths to account for server locations
-#edited 24 feb to account for if there is missing files (ie no DNB or Mband)
-#edited 25 feb - commented out to run just the array, need to make processonesampel into 2 fxn
+#edited 23 March  - turned processonesample into processonesample, onesampleCDF, onesamplearray need to test it ASAP.
 @author: cpasilla
 """
 
@@ -92,7 +98,6 @@ def inspecth5(sampleset):
     
 # cropping functions
 
-
 def croptomultiples(casearray):
     rows=casearray.shape[1]
     columns=casearray.shape[2]
@@ -150,61 +155,55 @@ def croprawarray(sampleoutput):
     ymin, ymax, xmin, xmax = finddims(sampleoutput.values())
     FRS={starttime: a[0:ymin,0:xmin] for starttime, a in sampleoutput.items()}
     return FRS
-
-# this is designed to pull out the group of files that occur at the same time 
-#"sampleset" to run through the colocation and channel combining process for each timestep
-def processonesample(starttime,my_files):
-    #original_scn = Scene(reader = 'viirs_sdr', filenames=my_files) #geostationary
-    #print(original_scn.keys())
-    #print('This is the JPSS channels available', original_scn.available_dataset_names())
-    #print('This is the JPSS composites available', original_scn.available_composite_names())
+    
+def onesampleCDF (starttime, my_files):
+    original_scn = Scene(reader = 'viirs_sdr', filenames=my_files) #geostationary
+    print(original_scn.keys())
+    print('This is the JPSS channels available', original_scn.available_dataset_names())
+    print('This is the JPSS composites available', original_scn.available_composite_names())
 
     #load the channels and composites to the "scene"
-    #original_scn.load(['M12', 'M13','M14','M15', 'M16','DNB','dnb_latitude','dnb_longitude','m_latitude','m_longitude'])
+    original_scn.load(['M12', 'M13','M14','M15', 'M16','DNB','dnb_latitude','dnb_longitude','m_latitude','m_longitude'])
 
     #print/confirming shape of the original files before data manipulation 
-    #print('these are the start shapes of data files')
-    #print('M12', original_scn['M12'].shape)
-    #print('M13', original_scn['M13'].shape)
-    #print('M14', original_scn['M14'].shape)
-    #print('M15', original_scn['M15'].shape)
-    #print('M16', original_scn['M16'].shape)
-    #print('DNB', original_scn['DNB'].shape)
-    #print('DNB lat', original_scn['dnb_latitude'].shape)
-    #print('DNB long', original_scn['dnb_longitude'].shape)
-    #print(' Mband lat', original_scn['m_latitude'].shape)
-    #print(' Mband long', original_scn['m_longitude'].shape)
-    #print('this is the end of initial shape confirmation')
+    print('these are the start shapes of data files')
+    print('M12', original_scn['M12'].shape)
+    print('M13', original_scn['M13'].shape)
+    print('M14', original_scn['M14'].shape)
+    print('M15', original_scn['M15'].shape)
+    print('M16', original_scn['M16'].shape)
+    print('DNB', original_scn['DNB'].shape)
+    print('DNB lat', original_scn['dnb_latitude'].shape)
+    print('DNB long', original_scn['dnb_longitude'].shape)
+    print(' Mband lat', original_scn['m_latitude'].shape)
+    print(' Mband long', original_scn['m_longitude'].shape)
+    print('this is the end of initial shape confirmation')
 
     #now resample the Mband to the DNB with a new "Scene" role
-    #print('starting resampling of Mbands to DNB')
-    #Mband_resample_scn=original_scn.resample(original_scn['DNB'].attrs['area'], resampler='nearest')
-    #Mband_resample_scn=resample.resample(
+    print('starting resampling of Mbands to DNB')
+    Mband_resample_scn=original_scn.resample(original_scn['DNB'].attrs['area'], resampler='nearest')
+    Mband_resample_scn=resample.resample(
 
-    #print('these are the colocated Mband shapes')
-    #print(Mband_resample_scn['M12'].shape)
-    #print(Mband_resample_scn['M13'].shape)
-    #print(Mband_resample_scn['M14'].shape)
-    #print(Mband_resample_scn['M15'].shape)
-    #print(Mband_resample_scn['M16'].shape)
+    print('these are the colocated Mband shapes')
+    print(Mband_resample_scn['M12'].shape)
+    print(Mband_resample_scn['M13'].shape)
+    print(Mband_resample_scn['M14'].shape)
+    print(Mband_resample_scn['M15'].shape)
+    print(Mband_resample_scn['M16'].shape)
 
-    #channels = ['M12','M13','M14','M15','M16','DNB']
+    channels = ['M12','M13','M14','M15','M16','DNB']
 
-    #for c in channels:
+    for c in channels:
        # original_scn.save_dataset(c, f'{spath2}ORIGINAL_{c}_{starttime}.png', writer='simple_image')
-         #original_scn.save_dataset(c, spath2 + 'ORIGINAL_' + c + "_" + starttime + '.png', writer='simple_image') #engine='netcdf4')
-        #original_scn.save_dataset(c, spath2 + 'ORIGINAL_' + c + "_" + starttime + '.nc', writer='cf')         
-       # Mband_resample_scn.save_dataset(c, spath2 + 'COLOCATED_' + c + "_" + starttime + '.png', writer='simple_image') #engine='netcdf4')
-       # Mband_resample_scn.save_dataset(c, spath2 + 'COLOCATED_' +  c + "_" + starttime + '.nc', writer='cf')  
+       original_scn.save_dataset(c, spath2 + 'ORIGINAL_' + c + "_" + starttime + '.png', writer='simple_image') #engine='netcdf4')
+       #original_scn.save_dataset(c, spath2 + 'ORIGINAL_' + c + "_" + starttime + '.nc', writer='cf')         
+       Mband_resample_scn.save_dataset(c, spath2 + 'COLOCATED_' + c + "_" + starttime + '.png', writer='simple_image') #engine='netcdf4')
+       Mband_resample_scn.save_dataset(c, spath2 + 'COLOCATED_' +  c + "_" + starttime + '.nc', writer='cf')  
 
-    #print('done saving channels')
+    print('done saving', starttime, 'channels in netCDF files')
 
     
-    #####NEED TO MAKE THIS A SEPARATE PART NOT IN processonesample and rename processonesample to onesampleCDF 
-    #then a processonesample would run both of these or i would run which i need  onesampleCDF or onesampleARRAY if only need one
-    ##SO IF I HAVE TO PROCESS .NC FILES AT DIFFERENT TIMES CUZ MISSING DATA I CAN STILL THEN MAKE THE NEEDED ARRAY
-    
-#def processonesamplearray (starttime,my_files)
+def onesamplearray (starttime,my_files)
     #upload raw and colocated data files # may not need raw anymore were needed for initial validation of code 
     rawM16=Dataset(spath2 + "ORIGINAL_M16_" + starttime + ".nc")
     rawM15=Dataset(spath2 + "ORIGINAL_M15_" + starttime + ".nc")
@@ -288,7 +287,12 @@ def processonesample(starttime,my_files):
     return nodeadspacesingle
 
 
-#processes all the samples in the case
+#  pull out the group of files that occur at the same time "sampleset" 
+# to run through the colocation and channel combining process for each timestep
+def processonesample(starttime,myfiles):
+    x = onesamplearray(onesampleCDF(starttime,myfiles))
+
+#processes all the samples in the case that have the full data
 def processallsamples(sampleset,limit=None):
     if limit is None:
         limit=len(sampleset)
@@ -324,12 +328,11 @@ def main():
     import time
     timestr = time.strftime("%Y%m%d-%H%M")
     np.save(spath + "RAW_MASTER_ARRAY_" + timestr, SINGLE_CASE_ARRAY)
-#array colocated to DNB, with no -9999 edges, all same size to smallest dims, all channles,all samples
+#array colocated to DNB, with no -9999 edges, all same size to smallest dims, all channels,all samples
 
 
 
 if __name__ == "__main__":
-    main()
-    #find_timesteps()
-
+    #main()
+    find_timesteps()
 
