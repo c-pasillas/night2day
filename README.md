@@ -1,5 +1,5 @@
 # night2day
-this is the start of my git project to help colloboration on my dissertaiton code
+this is the start of my git project to help colloboration on my dissertation code
 
 to do list 
 
@@ -11,4 +11,4 @@ adjust processonesample become 2 fxns "processCDF" and processarray" to more rea
 still need to look into xarray to see if i can "processonesample" and "processonecase" without saving crazy amounts of . nc files
 
 POSTPROCESSING
-- need to hae a code to rebuild the larger array ( for each time step) from the patches since flatten will not work to maintain spatial and temporal considerations.  This way I can have single image of the area for test cases.  Later I would be runnign the learned model on different data set and can hopefully reprocess image by time and area as well.
+- need to hae a code to rebuild the larger array ( for each time step) from the patches since flatten will not work to maintain spatial and temporal considerations.  This way I can have single image of the area for test cases.  Later I would be running the learned model on different data set and can hopefully reprocess image by time and area as well.
