@@ -167,8 +167,8 @@ xx=np.log10(x)
 
 print("DNB raw max/min values are", np.amax(DNB),"and", np.amin (DNB))
 print("DNB fixed max/min values are", np.amax(DNBfix),"and", np.amin (DNBfix))
-print('x values max/min are", np.amax(x), "and", np.min(x)
-print('xx values max/min are", np.amax(xx), "and", np.min(xx)    
+print("x values max/min are", np.amax(x), "and", np.min(x))
+print("xx values max/min are", np.amax(xx), "and", np.min(xx))
 #observed radiances in moon  10-6 full moon 10-10 new moon
 #specificed range is 3e-9 to 2e-2
 DNBmx = 3E-7 # night sensor

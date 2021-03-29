@@ -1,0 +1,13 @@
+.idea/
+*.iml
+*.pyc
+__pycache__/
+venv/
+target/
+
+*.h5
+*.nc
+*.png
+*.npy
+*.npz
+*.db
