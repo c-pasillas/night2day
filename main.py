@@ -55,12 +55,12 @@ def learning_cmd(args):
 # night2day normalize
 # night2day prep-learning
 
-desc = f'''Process satellite {color(92)}images{reset} for machine learning.'''
+desc = f'''Process satellite images for machine learning.'''
 parser = argparse.ArgumentParser(description=desc)
 parser.set_defaults(func=status)
 subparsers = parser.add_subparsers()
 
-msg = (f'Pack a case into a {rgb(255, 0, 150)}{bold}single{reset} array',
+msg = (f'Pack a case into a single array',
        '''Process and pack a case into a single array.
        Matches time-correlated images, regularizes dimensions across all images.''')
 pack_case_p = subparsers.add_parser('pack-case', help=msg[0], description=msg[1])

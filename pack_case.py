@@ -8,8 +8,9 @@ from collections import defaultdict
 from satpy import Scene
 
 import common
-from common import log
+from common import log, rgb, reset, blue, orange
 
+# TODO add any other interesting channels, eg shortwave
 all_channels = ['DNB', 'M12', 'M13', 'M14', 'M15', 'M16']
 lat_long_both = ['dnb_latitude', 'dnb_longitude', 'm_latitude', 'm_longitude']
 lat_long = ['latitude', 'longitude']
@@ -42,16 +43,27 @@ def crop_nan_edges(scn: Scene):
     return {name: arr[:, front:till] for name, arr in zip(lat_long + all_channels, arrs)}
 
 def process_pair(pair, out_path: Path, filename: Path):
+    log.info(f'Colocating {blue}{pair[0]["datetime"]}{reset}')
     scn = Scene(reader='viirs_sdr', filenames=[f['path'] for f in pair])
     scn.load(all_channels + lat_long_both)
+    save_datasets(scn, 'ORIGINAL_', str(out_path))
+
+    log.info(f'Resampling {blue}{pair[0]["datetime"]}{reset}')
     resample_scn = scn.resample(scn['DNB'].attrs['area'], resampler='nearest')
-    log.info("About to save dataset")
-    # save_datasets(resample_scn, 'COLOCATED_', str(out_path))
-    log.info("About to crop edges")
+
+    log.info(f'Saving images {blue}{pair[0]["datetime"]}{reset}')
+    t = time.time()
+    save_datasets(resample_scn, 'COLOCATED_', str(out_path))
+    log.debug(f'Saving images took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
+
+    log.info(f'Cropping nan edges of {blue}{pair[0]["datetime"]}{reset}')
+    t = time.time()
     data = crop_nan_edges(resample_scn)
+    log.debug(f'Cropping nan edges took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
+
     data['channels'] = list(data)
     data['filenames'] = [f['filename'] for f in pair]
-    log.info("About to save np.savez")
+    log.info(f'Saving {blue}{filename.name}{reset}')
     np.savez(filename, **data)
 
 # TODO report NaN in the samples
@@ -60,6 +72,8 @@ def processed_file(pair, out_path: Path):
     f = out_path / (pair[0]['datetime'] + '.npz')
     if not f.exists():
         process_pair(pair, out_path, f)
+    else:
+        log.debug(f'Using previously computed {blue}{pair[0]["datetime"]}{reset}')
     return f
 
 # File name: GDNBO-SVDNB_j01_d20200110_t1031192_e1036592_b*
@@ -99,9 +113,10 @@ def ensure_colocated(db_path):
 # TODO version that takes path to folder directly
 #      then have this main command & control method call that
 def pack_case(db_path: Path):
-    log.info("I'm in pack_case!")
     h5_dir = h5_dir_name(db_path)
     pairs, unpaired = grouped_h5s(h5_dir)
+    if unpaired:
+        log.info(f'{rgb(255,0,0)}Unpaired h5s{reset} {unpaired}')
     col = ensure_colocated(db_path)
     files = [processed_file(pairs[datetime], col) for datetime in sorted(pairs)]
     npzs = [np.load(f) for f in files]
@@ -110,10 +125,11 @@ def pack_case(db_path: Path):
     case = {c: np.stack(tuple(npz[c][:min_rows, :min_cols] for npz in npzs)) for c in channels}
     case['channels'] = channels
     case['samples'] = [Path(f).stem for f in files]
-    np.savez(db_path.parent / 'case.npz', **case)
-    log.debug("Done saving.")
+    filename = db_path.parent / 'case.npz'
+    log.info(f'Writing {blue}{filename.name}{reset}\n' +
+             f'{orange}Channels{reset} {channels}\n{orange}Samples{reset} {case["samples"]}')
+    np.savez(filename, **case)
     for npz in npzs:
         npz.close()
-    log.debug("Done closing")
 
 
