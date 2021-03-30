@@ -105,7 +105,7 @@ def grouped_h5s(h5_dir):
     return group_by_datetime(h5s)
 
 def ensure_colocated(db_path):
-    col = db_path.parent / 'colocated'
+    col = db_path.parent / 'COLOCATED'
     col.mkdir(exist_ok=True)
     return col
 
