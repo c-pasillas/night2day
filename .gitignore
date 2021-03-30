@@ -11,3 +11,5 @@ target/
 *.npy
 *.npz
 *.db
+.DS_Store
+
