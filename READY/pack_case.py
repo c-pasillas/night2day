@@ -8,7 +8,7 @@ from collections import defaultdict
 from satpy import Scene
 
 import common
-from common import log, rgb, reset, blue, orange
+from common import log, rgb, reset, blue, orange, bold
 
 # TODO add any other interesting channels, eg shortwave
 all_channels = ['DNB', 'M12', 'M13', 'M14', 'M15', 'M16']
@@ -68,8 +68,9 @@ def process_pair(pair, out_path: Path, filename: Path):
 
 # TODO report NaN in the samples
 
-def processed_file(pair, out_path: Path):
+def processed_file(pair, out_path: Path, curr_idx, len_pairs):
     f = out_path / (pair[0]['datetime'] + '.npz')
+    log.debug(f'{rgb(255,0,0)}Processing{reset} timestep {bold}{curr_idx + 1}/{len_pairs}{reset}')
     if not f.exists():
         process_pair(pair, out_path, f)
     else:
@@ -118,7 +119,7 @@ def pack_case(db_path: Path):
     if unpaired:
         log.info(f'{rgb(255,0,0)}Unpaired h5s{reset} {unpaired}')
     col = ensure_colocated(db_path)
-    files = [processed_file(pairs[datetime], col) for datetime in sorted(pairs)]
+    files = [processed_file(pairs[datetime], col, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
     npzs = [np.load(f) for f in files]
     min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in npzs])
     channels = npzs[0]['channels']
