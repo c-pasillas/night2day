@@ -80,6 +80,31 @@ def suffix_keys(d, name_suffix):
 def as_array(patches):
     return np.array([(sample, x.start, x.stop, y.start, y.stop) for sample, x, y in patches])
 
+def ensure_ml_input(root_path: Path):
+    ml_in = root_path / 'ML_INPUT'
+    ml_in.mkdir(exist_ok=True)
+    return ml_in
+
+def make_unique_dir(ml_in: Path, predicted, predictors):
+    name = f'{predicted}-{len(predictors)}_predictors'
+    x = ml_in / name
+    if not x.exists():
+        x.mkdir()
+        return x
+    for i in range(20):
+        x = ml_in / (name + "-" + str(i))
+        if not x.exists():
+            x.mkdir()
+            return x
+    raise Exception("More than 20 folders with the same predicted channel, delete some")
+
+def write_description(out_dir: Path, preds):
+    with open(out_dir / 'description.txt', 'w') as d:
+        d.write(f'Predicted channel: {preds["predicted"]}\n')
+        d.write(f'Predictors:\n')
+        for p in preds['predictors']:
+            d.write(f'  {p}\n')
+
 def learning_prep(db_path: Path):
     path = db_path.parent / 'learning_channels.txt'
     if not path.exists():
@@ -100,9 +125,13 @@ def learning_prep(db_path: Path):
         log.info(f'Gathering test patches')
         test_z = stack_patches(test_patches, lats, longs, target, predictors)
         zz = {**suffix_keys(train_z, '_train'), **suffix_keys(test_z, '_test')}
+
+        ml_in = ensure_ml_input(db_path.parent)
+        out_dir = make_unique_dir(ml_in, preds['predicted'], preds['predictors'])
         log.info(f'Writing {blue}learn.npz{reset}')
-        np.savez(db_path.parent / 'learn.npz', **zz, samples=f['samples'],
+        np.savez(out_dir / 'data.npz', **zz, samples=f['samples'],
                  train_patches=as_array(train_patches), test_patches=as_array(test_patches),
                  y_channel=np.array([preds['predicted']]), x_channels=np.array(preds['predictors']))
+        write_description(out_dir, preds)
 
 
