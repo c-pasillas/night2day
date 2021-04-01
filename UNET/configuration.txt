@@ -1,0 +1,5 @@
+machine='zrain'
+#C4: "as-is" architecture, max value 1: use UNET, adjusted for the metrics, first real ML
+my_file_prefix='C1'
+NN_string='UNET'
+batch_size=12
