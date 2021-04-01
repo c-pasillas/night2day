@@ -40,6 +40,16 @@ DNB_bounds = {'night': [2e-10, 3e-7],
               'new_moon': [2e-11, 1e-9],
               'Miller_full_moon': [-9.5, -8.0]}
 
+DNB_consts = {
+     'DNB_norm': DNB_bounds['night'],
+     'DNB_full_moon_norm': DNB_bounds['full_moon'],
+     'DNB_new_moon_norm': DNB_bounds['new_moon'],
+     'DNB_log_norm': np.log10(DNB_bounds['night']),
+     'DNB_log_full_moon_norm': np.log10(DNB_bounds['full_moon']),
+     'DNB_log_new_moon_norm': np.log10(DNB_bounds['new_moon']),
+     'DNB_log_Miller_full_moon': DNB_bounds['Miller_full_moon']
+}
+
 def formula(arr, mn_mx):
     mn, mx = mn_mx
     ret = (arr - mn) / (mx - mn)
@@ -49,6 +59,9 @@ def formula(arr, mn_mx):
 def reverse_formula(arr, mn_mx):
     mn, mx = mn_mx
     return (arr * (mx - mn)) + mn
+
+def denormalize(channel_name, arr):
+    return reverse_formula(arr, DNB_consts[channel_name])
 
 def dnb_derive(dnb_arr):
     adj = dnb_arr * 1e-4
