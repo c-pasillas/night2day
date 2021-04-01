@@ -132,6 +132,7 @@ def learning_prep(db_path: Path):
         np.savez(out_dir / 'data.npz', **zz, samples=f['samples'],
                  train_patches=as_array(train_patches), test_patches=as_array(test_patches),
                  y_channel=np.array([preds['predicted']]), x_channels=np.array(preds['predictors']))
+        log.info(f'Wrote {blue}learn.npz{reset}')
         write_description(out_dir, preds)
 
 

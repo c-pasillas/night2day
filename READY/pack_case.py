@@ -132,5 +132,5 @@ def pack_case(db_path: Path):
     np.savez(filename, **case)
     for npz in npzs:
         npz.close()
-
+    log.info(f'Wrote {blue}{filename.name}{reset}')
 

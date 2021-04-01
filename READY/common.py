@@ -41,7 +41,7 @@ else:
     debug_fmt = base + ' ⬛ %(message)s'
 
 log = logging.getLogger('night2day')
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 
 for level, fmt in [(logging.INFO, info_fmt), (logging.DEBUG, debug_fmt)]:
     handler = logging.StreamHandler(stream=sys.stdout)

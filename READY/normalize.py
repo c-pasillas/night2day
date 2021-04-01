@@ -85,5 +85,6 @@ def normalize(db_path: Path):
     norm_file = db_path.parent / 'case_norm.npz'
     log.info(f'Writing {blue}{norm_file.name}{reset}')
     np.savez(norm_file, **norm)
+    log.info(f'Wrote {blue}{norm_file.name}{reset}')
 
 

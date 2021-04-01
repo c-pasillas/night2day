@@ -65,19 +65,19 @@ msg = (f'Pack a case into a single array',
        Matches time-correlated images, regularizes dimensions across all images.''')
 pack_case_p = subparsers.add_parser('pack-case', help=msg[0], description=msg[1])
 pack_case_p.set_defaults(func=pack_case_cmd)
-pack_case_p.add_argument('-v', '--verbose', action='count', default=0)
+pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
 
 norm_p = subparsers.add_parser('normalize', help='Normalize and derive channels')
 norm_p.set_defaults(func=normalize_cmd)
-norm_p.add_argument('-v', '--verbose', action='count', default=0)
+norm_p.add_argument('-q', '--quiet', action='count', default=0)
 
 learn_p = subparsers.add_parser('learn-prep', help='Create file for input to learning')
 learn_p.set_defaults(func=learning_cmd)
-learn_p.add_argument('-v', '--verbose', action='count', default=0)
+learn_p.add_argument('-q', '--quiet', action='count', default=0)
 
 args = parser.parse_args()
-if hasattr(args, 'verbose') and args.verbose > 0:
-    log.setLevel(logging.DEBUG)
+if hasattr(args, 'quiet') and args.quiet > 0:
+    log.setLevel(logging.INFO)
 args.func(args)
 
 
