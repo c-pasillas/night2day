@@ -46,6 +46,10 @@ def formula(arr, mn_mx):
     ret.clip(0, 1, out=ret)
     return ret
 
+def reverse_formula(arr, mn_mx):
+    mn, mx = mn_mx
+    return (arr * (mx - mn)) + mn
+
 def dnb_derive(dnb_arr):
     adj = dnb_arr * 1e-4
     ladj = np.log10(adj)
