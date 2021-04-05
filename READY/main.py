@@ -75,6 +75,9 @@ learn_p = subparsers.add_parser('learn-prep', help='Create file for input to lea
 learn_p.set_defaults(func=learning_cmd)
 learn_p.add_argument('-q', '--quiet', action='count', default=0)
 
+"""The default is to display both log.info() and log.debug() statements.
+But if the user runs this program with the -q or --quiet flags, then only
+display the log.info() statements."""
 args = parser.parse_args()
 if hasattr(args, 'quiet') and args.quiet > 0:
     log.setLevel(logging.INFO)

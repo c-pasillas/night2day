@@ -7,6 +7,7 @@ import sqlite3
 import subprocess
 import logging
 
+"""Terminal output color codes, used in logging."""
 reset, bold, underline, invert = '\u001b[0m', '\u001b[1m', '\u001b[4m', '\u001b[7m'
 def is_byte(i):
     return 0 <= i <= 256
@@ -25,6 +26,10 @@ yellow = rgb(255, 255, 0)
 yellow2 = rgb(110, 110, 80)
 orange = rgb(255, 100, 0)
 
+
+"""Logging format.
+Decide if we are writing to the terminal, or into a file.
+If writing to the terminal, use color codes."""
 if sys.stderr.isatty():
     date_fmt = f'{gray(130)}%H:%M{gray(100)}:{reset}%S'
     base = (f'%(asctime)s{gray(170)}.%(msecs).3d ' +
@@ -40,6 +45,7 @@ else:
     info_fmt  = base + '⬛ %(message)s'
     debug_fmt = base + ' ⬛ %(message)s'
 
+"""Set up logger with appropriate formatting"""
 log = logging.getLogger('night2day')
 log.setLevel(logging.DEBUG)
 
@@ -51,6 +57,10 @@ for level, fmt in [(logging.INFO, info_fmt), (logging.DEBUG, debug_fmt)]:
         handler.addFilter(lambda record: record.levelno == logging.DEBUG)
     log.addHandler(handler)
 
+"""Utility code for recording information in a database.
+Currently not used for anything heavyweight, but the 
+facilities are ready should the project need more bookkeeping
+in the future."""
 recent_dbs = pathlib.Path.home() / '.night2day'
 def get_recents():
     if recent_dbs.exists():
