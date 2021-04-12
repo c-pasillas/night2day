@@ -117,10 +117,10 @@ def group_by_datetime(h5s):
     return paired, unpaired
 
 def h5_dir_name(db_path):
-    #conn = sqlite3.connect(db_path)
-    #dir_name = conn.execute('select value from Settings where name=?', ('h5_dir_name',)).fetchone()[0]
-    #conn.close()
-    return db_path.parent / "RAWDATA" #dir_name
+    conn = sqlite3.connect(db_path)
+    dir_name = conn.execute('select value from Settings where name=?', ('h5_dir_name',)).fetchone()[0]
+    conn.close()
+    return db_path.parent / dir_name #"RAWDATA" #dir_name
 
 def grouped_h5s(h5_dir):
     h5s = [parse_filename(f) for f in h5_dir.iterdir() if f.suffix == '.h5']
