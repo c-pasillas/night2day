@@ -12,7 +12,7 @@ from common import log, bold, reset, color, rgb
 import pack_case
 import normalize
 import learning_prep
-import model_validaiton
+import model_validation
 
 
 def shell_setup():
