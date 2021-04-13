@@ -37,7 +37,7 @@ def gather_channels(path):
     """Read an .npz file to gather up the available sensor channel names."""
     with np.load(path) as f:
         chans = list(f['channels'])
-        return [c for c in chans if c not in ('latitude', 'longitude')
+        return [c for c in chans if c not in ('latitude', 'longitude')]
 
 def ensure_ml_val(root_path: Path):
     ml_in = root_path / 'ML_VALIDATION'
