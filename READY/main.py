@@ -12,6 +12,7 @@ from common import log, bold, reset, color, rgb
 import pack_case
 import normalize
 import learning_prep
+import model_validaiton
 
 
 def shell_setup():
@@ -47,6 +48,9 @@ def normalize_cmd(args):
 def learning_cmd(args):
     db_path = common.locate_db(None)
     learning_prep.learning_prep(db_path)
+def model_val_cmd(args):
+    db_path = common.locate_db(None)
+    model_validation.model_val(db_path) 
 
 # night2day status [case root dir | night2day.db file]
 # night2day info file
@@ -74,6 +78,11 @@ norm_p.add_argument('-q', '--quiet', action='count', default=0)
 learn_p = subparsers.add_parser('learn-prep', help='Create file for input to learning')
 learn_p.set_defaults(func=learning_cmd)
 learn_p.add_argument('-q', '--quiet', action='count', default=0)
+
+
+model_val_p = subparsers.add_parser('model-val', help='Create  validation file for model validation')
+model_val_p.set_defaults(func=model_val_cmd)
+model_val_p.add_argument('-q', '--quiet', action='count', default=0)
 
 """The default is to display both log.info() and log.debug() statements.
 But if the user runs this program with the -q or --quiet flags, then only
