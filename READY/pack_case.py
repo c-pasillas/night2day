@@ -5,7 +5,7 @@ from pathlib import Path
 import sqlite3
 import time
 from collections import defaultdict
-from satpy import Scene
+
 
 import common
 from common import log, rgb, reset, blue, orange, bold
@@ -15,12 +15,6 @@ all_channels = ['DNB', 'M12', 'M13', 'M14', 'M15', 'M16']
 lat_long_both = ['dnb_latitude', 'dnb_longitude', 'm_latitude', 'm_longitude']
 lat_long = ['latitude', 'longitude']
 
-def save_datasets(scene: Scene, tag, folder, save_nc=False):
-    scene.save_datasets(datasets=all_channels, base_dir=folder, writer='simple_image',
-                        filename=tag + '{start_time:%Y%m%d_%H%M%S}_{name}.png')
-    if save_nc:
-        scene.save_datasets(datasets=all_channels, base_dir=folder, writer='cf',
-                            filename=tag + '{start_time:%Y%m%d_%H%M%S}_{name}.nc')
 
 def nan_count(row):
     ct = sum(1 for _ in it.takewhile(np.isnan, row))
@@ -34,13 +28,8 @@ def nan_edges(rows):
     the end of the row. Then aggregate the max NaN count across all rows."""
     counts = ((nan_count(r), nan_count(r[::-1])) for r in rows)
     return ft.reduce(pairwise_max, counts)
-def arrays_and_edges(scn: Scene):
-    """Given a colocated scene, gather longitude and latitude arrays and
-    sensor arrays. And return the maximum NaN edges found in each channel."""
-    ae = [(arr, nan_edges(arr)) for arr in (scn[c].values for c in all_channels)]
-    arrs = [scn[c].values for c in lat_long_both[:2]] + [a[0] for a in ae]
-    return arrs, [a[1] for a in ae]
-def crop_nan_edges(scn: Scene):
+
+def crop_nan_edges(scn):
     """Using the maximum NaN edges found across all sensor channels,
     crop all channels to eliminate NaN edges. Return a dict mapping the
     channel names to the numpy arrays."""
@@ -49,36 +38,41 @@ def crop_nan_edges(scn: Scene):
     till = arrs[0].shape[-1] - back
     return {name: arr[:, front:till] for name, arr in zip(lat_long + all_channels, arrs)}
 
-def process_pair(pair, out_path: Path, filename: Path):
-    """Pair is a list of two parsed filenames (see the function parse_filename below).
-    Given these two files, use Scene to load the appropriate channels.
-    Then save these original channels (.png and optionally .nc files).
-    Then resample (colocate) to make the sensor channels match up.
-    Then save these colocated channels.
-    Crop the NaN edges, tag with meta information (which files were used as input),
-    And finally save the numpy arrays (so we don't need to recompute next time)"""
-    log.info(f'Colocating {blue}{pair[0]["datetime"]}{reset}')
-    scn = Scene(reader='viirs_sdr', filenames=[f['path'] for f in pair])
-    scn.load(all_channels + lat_long_both)
-    save_datasets(scn, 'ORIGINAL_', str(out_path))
+def count_nan(array):
+    return np.sum(np.isnan(array))
+    
+def is_all_nan(array):
+    return all(np.isnan(array))
 
-    log.info(f'Resampling {blue}{pair[0]["datetime"]}{reset}')
-    resample_scn = scn.resample(scn['DNB'].attrs['area'], resampler='nearest')
-
-    log.info(f'Saving images {blue}{pair[0]["datetime"]}{reset}')
-    t = time.time()
-    save_datasets(resample_scn, 'COLOCATED_', str(out_path))
-    log.debug(f'Saving images took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
-
-    log.info(f'Cropping nan edges of {blue}{pair[0]["datetime"]}{reset}')
-    t = time.time()
-    data = crop_nan_edges(resample_scn)
-    log.debug(f'Cropping nan edges took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
-
-    data['channels'] = list(data)
-    data['filenames'] = [f['filename'] for f in pair]
-    log.info(f'Saving {blue}{filename.name}{reset}')
-    np.savez(filename, **data)
+def find_nan_row(array):
+    for i,row in enumerate(array):
+        if is_all_nan(row):
+            for j in range (i+1,len(array)):
+                if not is_all_nan(array[j]):
+                    return(i-1, j)
+    return(0,0)     
+    
+def fill_in_nan_row(array, start, stop):
+    a=(stop-start)//2
+    for i in range(start + 1, start + a):
+        array[i,:]=array[start,:]
+    for i in range(start + a, stop):
+        array[i,:]=array[stop,:]
+            
+def fill_in_nan_array(case, channels):
+    log.info(f'filling in nan arrays for {channels}')
+    for channel in channels:
+        log.info(f'filling in nan arrays for {channel}')
+        images = case[channel]   
+        for i,image in enumerate(images):
+            log.info(f'filling in image {i+1} / {len(images)}')
+            start,stop = find_nan_row(image)
+            if start != 0:
+                fill_in_nan_row(image, start,stop)
+        images[np.isnan(images)] = np.nanmean(images)
+    d=case['DNB']
+    d.clip(1e-11, out=d)
+    
 
 # TODO report NaN in the samples
 
@@ -88,7 +82,7 @@ def processed_file(pair, out_path: Path, curr_idx, len_pairs):
     f = out_path / (pair[0]['datetime'] + '.npz')
     log.debug(f'{rgb(255,0,0)}Processing{reset} timestep {bold}{curr_idx + 1}/{len_pairs}{reset}')
     if not f.exists():
-        process_pair(pair, out_path, f)
+        print("im broke")#process_pair(pair, out_path, f)
     else:
         log.debug(f'Using previously computed {blue}{pair[0]["datetime"]}{reset}')
     return f
@@ -147,16 +141,19 @@ def pack_case(db_path: Path):
         log.info(f'{rgb(255,0,0)}Unpaired h5s{reset} {unpaired}')
     col = ensure_colocated(db_path)
     files = [processed_file(pairs[datetime], col, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
+    files = files[:5]
     npzs = [np.load(f) for f in files]
     min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in npzs])
     channels = npzs[0]['channels']
     case = {c: np.stack(tuple(npz[c][:min_rows, :min_cols] for npz in npzs)) for c in channels}
+    fill_in_nan_array(case, channels)
     case['channels'] = channels
     case['samples'] = [Path(f).stem for f in files]
-    filename = db_path.parent / 'case.npz'
+    filename = db_path.parent / 'casereduced.npz'
     log.info(f'Writing {blue}{filename.name}{reset}\n' +
              f'{orange}Channels{reset} {channels}\n{orange}Samples{reset} {case["samples"]}')
     np.savez(filename, **case)
+    #np.savez(filename[:5,:,:,:],**case)
     for npz in npzs:
         npz.close()
     log.info(f'Wrote {blue}{filename.name}{reset}')

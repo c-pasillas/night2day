@@ -114,18 +114,18 @@ def normalize_case(case):
 def show_stats(norm):
     for name, arr in norm.items():
         if name not in ('samples', 'channels'):
-            log.debug(f'{name} max {blue}{np.nanmax(arr):.5}{reset} min {yellow}{np.nanmin(arr):.5}{reset}')
+            log.debug(f'{name} max {blue}{np.max(arr):.5}{reset} min {yellow}{np.min(arr):.5}{reset}')
 
 def normalize(db_path: Path):
     """Load case.npz, calculate normalized channels,
     then save all channel data out to case_norm.npz."""
-    case_file = db_path.parent / 'case.npz'
+    case_file = db_path.parent / 'casereduced.npz'
     log.info(f'Loading {blue}{case_file.name}{reset}')
     with np.load(case_file) as f:
         case = dict(f)
     norm = normalize_case(case)
     show_stats(norm)
-    norm_file = db_path.parent / 'case_norm.npz'
+    norm_file = db_path.parent / 'casereduced_norm.npz'
     log.info(f'Writing {blue}{norm_file.name}{reset}')
     np.savez(norm_file, **norm)
     log.info(f'Wrote {blue}{norm_file.name}{reset}')

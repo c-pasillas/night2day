@@ -13,7 +13,9 @@ import pack_case
 import normalize
 import learning_prep
 import model_validation
-
+import MLR_SKL
+import MLR_postprocess
+import scatter
 
 def shell_setup():
     bin_dir = Path.home() / 'bin'
@@ -52,6 +54,15 @@ def model_val_cmd(args):
     db_path = common.locate_db(None)
     model_validation.model_val(db_path) 
 
+def MLR_postprocess_cmd(args):
+    MLR_postprocess.postprocess(args.npzfilename, args.modelname, args.nick) 
+
+def MLR_cmd(args):
+    MLR_SKL.MLR(args.npzfilename, args.nick)   
+
+def scatter_cmd(args):
+    scatter.scatter(args.npzfilename, args.nick, args.samplesize)      
+
 # night2day status [case root dir | night2day.db file]
 # night2day info file
 # night2day log [root | db file]
@@ -83,6 +94,30 @@ learn_p.add_argument('-q', '--quiet', action='count', default=0)
 model_val_p = subparsers.add_parser('model-val', help='Create  validation file for model validation')
 model_val_p.set_defaults(func=model_val_cmd)
 model_val_p.add_argument('-q', '--quiet', action='count', default=0)
+
+MLR_p = subparsers.add_parser('MLR', help='making MLR SKL model from .npz data')
+MLR_p.set_defaults(func=MLR_cmd)
+MLR_p.add_argument('-q', '--quiet', action='count', default=0)
+MLR_p.add_argument('npzfilename' )
+MLR_p.add_argument('nick' )
+
+MLR_post = subparsers.add_parser('MLR_post', help='take npz and model and make final data sets')
+MLR_post.set_defaults(func=MLR_postprocess_cmd)
+MLR_post.add_argument('-q', '--quiet', action='count', default=0)
+MLR_post.add_argument('npzfilename' )
+MLR_post.add_argument('modelname' )
+MLR_post.add_argument('nick' )
+
+
+scatter_p = subparsers.add_parser('scatter', help='take final MLR/truth and make scatter plots')
+scatter_p.set_defaults(func=scatter_cmd)
+scatter_p.add_argument('-q', '--quiet', action='count', default=0)
+scatter_p.add_argument('npzfilename' )
+scatter_p.add_argument('nick' )
+scatter_p.add_argument('samplesize' )
+
+
+
 
 """The default is to display both log.info() and log.debug() statements.
 But if the user runs this program with the -q or --quiet flags, then only

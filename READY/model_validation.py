@@ -10,13 +10,33 @@ from common import log, bold, reset, yellow, blue, orange, rgb
 instructions = '# Lines starting with the pound sign (#) are not included\n' +\
                '# Mark the channel to predict by starting the line with an asterisk (*)\n'
 
+patch_size = 256
+
+def slices(lim, step):
+    return [slice(a, a + step) for a in range(0, lim - step + 1, step)]
+def all_patches(samples, x, y):
+    """Given the number of samples and the dimensions of each sample,
+    compute all patch identifiers. Each patch is a 2-dimensional array.
+    Using 256 as patch_size, these are 256x256 image patches. Each patch identifier
+    looks like (3, slice(256, 512), slice(256, 512)). This example patch identifier
+    describes going to the fourth sample (index 3), and slicing out the patch of the
+    overall 2-d array from 256-512 for both rows and columns.
+    A patch identifier is useful because it can be directly used as an index into
+    the arrays. If an array of DNB data is of shape (20, 3000, 4000), meaning 20 samples
+    each of which is a 3000x4000 2-d array, we can access a patch of data by:
+    DNB[p] where p is a patch identifier."""
+    return list(it.product(range(samples), slices(x, patch_size), slices(y, patch_size)))
+
 def write_channel_options(path, channels):
     """Write out a description file displaying all the available channels that could be
     used as part of a learning algorithm."""
     with open(path, 'w') as f:
         f.write(instructions)
         for c in channels:
-            f.write('  ' + c + '\n')
+            if "norm" not in c or 'DNB' in c:
+                f.write('# ' + c + '\n')
+            else:
+                f.write('  ' + c + '\n')
 
 def read_channel_options(path):
     """Read and parse an edited file, which should indicate which channels to
@@ -68,7 +88,10 @@ def write_description(out_dir: Path, preds):
         d.write(f'Predictors:\n')
         for p in preds['predictors']:
             d.write(f'  {p}\n')
-
+           
+            
+            
+            
 def model_val(db_path: Path):
     """Write model_val_channels.txt with a menu of available channels for predictors and
     predicted, if it does not exist. After the user edits that file, selecting which
@@ -83,15 +106,27 @@ def model_val(db_path: Path):
         return
     preds = read_channel_options(path)
     with np.load(db_path.parent / 'case_norm.npz') as f:
-        predicted_channel = f[preds["predicted"]]
+        a_patches = all_patches(*f['DNB'].shape)
+        #first_patch = a_patches[0]
+        #x=f['DNB'][first_patch]
+       
+        #DNB TRUTH
+        predicted_channel = f[preds["predicted"]] #full size array (5, 3K, 4K)
+        predicted_patch = np.stack([predicted_channel[p] for p in a_patches]) #patched array (40, 256,256)
+        log.info(f'shape of predicted patch is {predicted_patch.shape}')
+        #PREDICTORS
         channel_names = preds['predictors']  
         channel_arrays = [f[c] for c in channel_names]        
-        predictors_channels = np.stack(channel_arrays, axis=-1)      
+        predictors_channels = np.stack(channel_arrays, axis=-1)  #full size array (5,3K,4K,12)
+        predictors_patch = np.stack([predictors_channels[p] for p in a_patches]) #patched array (40,256,256,12)
+        log.info(f'shape of predictors patch is {predictors_patch.shape}')
+        
         model_val_dir = ensure_ml_val(db_path.parent)
         out_dir = make_unique_dir(model_val_dir, preds['predicted'], preds['predictors'])
-        log.info(f'Writing {blue}learn.npz{reset}')
-        np.savez(out_dir / 'data.npz', Y=predicted_channel,X = predictors_channels,
-                 y_channel=np.array([preds['predicted']]), x_channels=np.array(preds['predictors']))
+        log.info(f'Writing {blue}data.npz{reset}')
+        ##or predicted/predictor_channel if can use full size
+        np.savez(out_dir / 'data.npz', Y=predicted_patch,X = predictors_patch, 
+                         y_channel=np.array([preds['predicted']]), x_channels=np.array(preds['predictors'])) 
         log.info(f'Wrote {blue}data.npz{reset}')
         write_description(out_dir, preds)
 

@@ -8,9 +8,9 @@ import common
 from common import log, bold, reset, yellow, blue, orange, rgb
 
 # TODO change area-of-interest here
-NSEW = 45, -5, -125, 160
+NSEW = 45, -20, -105, 105 #45, -5, -125, 160
 patch_size = 256
-train_proportion = 0.8
+train_proportion = 0.9#0.8
 zero_one = [0, -1]
 
 def is_point_in_box(lat, long):
@@ -59,7 +59,10 @@ def write_channel_options(path, channels):
     with open(path, 'w') as f:
         f.write(instructions)
         for c in channels:
-            f.write('  ' + c + '\n')
+            if "norm" not in c or 'DNB' in c:
+                f.write('# ' + c + '\n')
+            else:
+                f.write('  ' + c + '\n')
 
 def read_channel_options(path):
     """Read and parse an edited file, which should indicate which channels to
