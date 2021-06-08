@@ -24,7 +24,7 @@ plt.rcParams['figure.figsize'] = (20,10)
 def downsample (arr,samplesize):
     arr = arr.reshape(-1,2)
     rng = np.random.default_rng()
-    #rng.shuffle(arr)
+    rng.shuffle(arr)
     a = arr[:int(samplesize)]
     return a[...,0].flatten(), a[...,1].flatten()      
     

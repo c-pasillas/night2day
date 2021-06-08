@@ -9,7 +9,7 @@ import time
 
 import common
 from common import log, bold, reset, color, rgb
-import pack_case
+import VIIRS_pack_case
 import normalize
 import learning_prep
 import model_validation
@@ -39,11 +39,11 @@ def info(args):
     pass
 def log_cmd(args):
     pass
-def pack_case_cmd(args):
+def VIIRS_pack_case_cmd(args):
     db_path = common.locate_db(None)
     if not db_path:
         db_path = common.create_db(".")
-    pack_case.pack_case(db_path)
+    VIIRS_pack_case.pack_case(db_path) #.py file then the Def/fxn in the file
 def normalize_cmd(args):
     db_path = common.locate_db(None)
     normalize.normalize(db_path)
@@ -78,9 +78,9 @@ subparsers = parser.add_subparsers()
 msg = (f'Pack a case into a single array',
        '''Process and pack a case into a single array.
        Matches time-correlated images, regularizes dimensions across all images.''')
-pack_case_p = subparsers.add_parser('pack-case', help=msg[0], description=msg[1])
-pack_case_p.set_defaults(func=pack_case_cmd)
-pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
+VIIRS_pack_case_p = subparsers.add_parser('VIIRS-pack-case', help=msg[0], description=msg[1])
+VIIRS_pack_case_p.set_defaults(func=VIIRS_pack_case_cmd)
+VIIRS_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
 
 norm_p = subparsers.add_parser('normalize', help='Normalize and derive channels')
 norm_p.set_defaults(func=normalize_cmd)
@@ -115,8 +115,6 @@ scatter_p.add_argument('-q', '--quiet', action='count', default=0)
 scatter_p.add_argument('npzfilename' )
 scatter_p.add_argument('nick' )
 scatter_p.add_argument('samplesize' )
-
-
 
 
 """The default is to display both log.info() and log.debug() statements.
