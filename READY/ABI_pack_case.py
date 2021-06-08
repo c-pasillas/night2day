@@ -6,6 +6,7 @@ import sqlite3
 import time
 from collections import defaultdict
 from satpy import Scene
+import datetime
 
 import common
 from common import log, rgb, reset, blue, orange, bold
@@ -129,72 +130,92 @@ def processed_file(pair, out_path: Path, curr_idx, len_pairs):
         log.debug(f'Using previously computed {blue}{pair[0]["datetime"]}{reset}')
     return f
 
-# File name: GDNBO-SVDNB_j01_d20200110_t1031192_e1036592_b*
-def parse_filename(path):
-    """Given the path to one of the raw satellite sensor .h5 files, parse the
-    file name into separate fields, for ease of use in later logic."""
-    n = path.name.split('_')
-    return {'filename': path.name, 'channels': n[0], 'satellite': n[1],
-            'date': n[2], 'start': n[3], 'end': n[4],
-            'datetime': n[2] + '_' + n[3], 'path': str(path)}
+def intersect(r1, r2):
+    if r2['start'] < r1['start']:
+        r1, r2 = r2, r1
+    overlap = (r1['end'] - r2['start']).total_seconds()
+    return 0 if overlap < 0 else overlap
 
-def group_by_datetime(h5s):
-    """Given a list of parsed filenames of h5 files, pair them up by
-    corresponding datetime (so that these pairs can be colocated later by the
-    Scene library. Filenames that don't have a paired file are returned separately."""
-    def f(d, h5):
-        d[h5['datetime']].append(h5)
+format_dnb, format_abi = '%Y%m%d%H%M%S', '%Y%j%H%M%S'
+def parse_time(time_str):
+    return datetime.datetime.strptime(time_str, format_dnb if len(time_str) == 14 else format_abi)
+
+ex_dnb_name = "GDNBO-SVDNB_j01_d20200110_t1031192_e1036592_b.h5"
+def parse_filename_dnb(path):
+    name = path if isinstance(path, str) else path.name
+    n = name.split('_')
+    date = n[2][1:]
+    start = parse_time(date + n[3][1:-1])
+    end = parse_time(date + n[4][1:-1])
+    return {'filename': name, 'channels': n[0], 'satellite': n[1],
+            'start': start, 'end': end, 'path': str(path)}
+
+ex_name = "OR_ABI-L1b-RadF-M3C15_G17_s20190781000382_e20190781011154_c20190781011198.docx"
+def parse_filename_abi(path):
+    name = path if isinstance(path, str) else path.name
+    n = name.split('_')
+    start = parse_time(n[3][1:-1])
+    end = parse_time(n[4][1:-1])
+    return {'filename': name, 'channels': n[0], 'satellite': n[2],
+            'sat_and_start': f'{n[2]} {start}',
+            'start': start, 'end': end, 'path': str(path)}
+
+def gather_h5s(h5_dir):
+    return [parse_filename_dnb(f) for f in h5_dir.iterdir() if f.suffix == '.h5']
+def group_abi_by_time_sat(nc_dir):
+    ncs = [parse_filename_abi(f) for f in nc_dir.iterdir() if f.suffix == '.nc']
+    def red(d, nc):
+        d[nc['sat_and_start']].append(nc)
         return d
-    d = ft.reduce(f, h5s, defaultdict(list))
-    paired, unpaired = {}, {}
-    for dt, h5_list in d.items():
-        p = paired if len(h5_list) == 2 else unpaired
-        p[dt] = h5_list
-    return paired, unpaired
+    d = ft.reduce(red, ncs, defaultdict(list))
+    return d
 
-def h5_dir_name(db_path):
-    conn = sqlite3.connect(db_path)
-    dir_name = conn.execute('select value from Settings where name=?', ('h5_dir_name',)).fetchone()[0]
-    conn.close()
-    return db_path.parent / dir_name #"RAWDATA" #dir_name
+def most_overlap(h5, nc_lists):
+    best_overlap, best_list = 0, []
+    for nc_list in nc_lists:
+        overlap = intersect(h5, nc_list[0])
+        if overlap > best_overlap:
+            best_overlap, best_list = overlap, nc_list
+    return best_list
 
-def grouped_h5s(h5_dir):
-    h5s = [parse_filename(f) for f in h5_dir.iterdir() if f.suffix == '.h5']
-    return group_by_datetime(h5s)
+def pair_h5s_with_ncs(h5s, nc_dict):
+    nc_lists = list(nc_dict.values())
+    ret = []
+    for h5 in h5s:
+        best = most_overlap(h5, nc_lists)
+        ret.append((h5, best))
+    return ret
 
-def ensure_colocated(db_path):
-    col = db_path.parent / 'COLOCATED'
-    col.mkdir(exist_ok=True)
-    return col
 
 # TODO make main entry to find unpaired samples
 # TODO version that takes path to folder directly
 #      then have this main command & control method call that
-def pack_case(db_path: Path):
+def pack_case(h5_dir, nc_dir):
     """Scan for h5 files, pair them by datetime, colocate and save them separately,
     then gather all samples together, crop to the minimum size, and save the entire
     case worth of channel data to a file, case.npz.
     This file, case.npz, contains each of the channels as separate array data.
     It also contains meta information like which channels are included and which h5 files
     went into making this case."""
-    h5_dir = h5_dir_name(db_path)
-    pairs, unpaired = grouped_h5s(h5_dir)
-    if unpaired:
-        log.info(f'{rgb(255,0,0)}Unpaired h5s{reset} {unpaired}')
-    col = ensure_colocated(db_path)
-    files = [processed_file(pairs[datetime], col, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
-    npzs = [np.load(f) for f in files]
-    min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in npzs])
-    channels = npzs[0]['channels']
-    case = {c: np.stack(tuple(npz[c][:min_rows, :min_cols] for npz in npzs)) for c in channels}
-    fill_in_nan_array(case, channels)
-    case['channels'] = channels
-    case['samples'] = [Path(f).stem for f in files]
-    filename = db_path.parent / 'case.npz'
-    log.info(f'Writing {blue}{filename.name}{reset}\n' +
-             f'{orange}Channels{reset} {channels}\n{orange}Samples{reset} {case["samples"]}')
-    np.savez(filename, **case)
-    for npz in npzs:
-        npz.close()
-    log.info(f'Wrote {blue}{filename.name}{reset}')
+    h5_dir, nc_dir = Path(h5_dir).resolve(), Path(nc_dir).resolve()
+    h5s = gather_h5s(h5_dir)
+    nc_dict = group_abi_by_time_sat(nc_dir)
+    paired = pair_h5s_with_ncs(h5s, nc_dict)
+    for h5, nc_list in paired:
+        log.info(f'{h5} \n{nc_list}')
+    #files = [processed_file(pairs[datetime], col, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
+    #npzs = [np.load(f) for f in files]
+    #min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in npzs])
+    #channels = npzs[0]['channels']
+    #case = {c: np.stack(tuple(npz[c][:min_rows, :min_cols] for npz in npzs)) for c in channels}
+    #fill_in_nan_array(case, channels)
+    #case['channels'] = channels
+    #case['samples'] = [Path(f).stem for f in files]
+    #filename = db_path.parent / 'case.npz'
+    #log.info(f'Writing {blue}{filename.name}{reset}\n' +
+    #         f'{orange}Channels{reset} {channels}\n{orange}Samples{reset} {case["samples"]}')
+    #np.savez(filename, **case)
+    #for npz in npzs:
+    #    npz.close()
+    #log.info(f'Wrote {blue}{filename.name}{reset}')
 

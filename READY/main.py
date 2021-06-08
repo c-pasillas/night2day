@@ -10,6 +10,7 @@ import time
 import common
 from common import log, bold, reset, color, rgb
 import VIIRS_pack_case
+import ABI_pack_case
 import normalize
 import learning_prep
 import model_validation
@@ -44,6 +45,8 @@ def VIIRS_pack_case_cmd(args):
     if not db_path:
         db_path = common.create_db(".")
     VIIRS_pack_case.pack_case(db_path) #.py file then the Def/fxn in the file
+def ABI_pack_case_cmd(args):
+    ABI_pack_case.pack_case(args.h5_dir, args.nc_dir)
 def normalize_cmd(args):
     db_path = common.locate_db(None)
     normalize.normalize(db_path)
@@ -81,6 +84,12 @@ msg = (f'Pack a case into a single array',
 VIIRS_pack_case_p = subparsers.add_parser('VIIRS-pack-case', help=msg[0], description=msg[1])
 VIIRS_pack_case_p.set_defaults(func=VIIRS_pack_case_cmd)
 VIIRS_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
+
+ABI_pack_case_p = subparsers.add_parser('ABI-pack-case')
+ABI_pack_case_p.set_defaults(func=ABI_pack_case_cmd)
+ABI_pack_case_p.add_argument('h5_dir')
+ABI_pack_case_p.add_argument('nc_dir')
+ABI_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
 
 norm_p = subparsers.add_parser('normalize', help='Normalize and derive channels')
 norm_p.set_defaults(func=normalize_cmd)
