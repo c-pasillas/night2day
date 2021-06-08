@@ -198,13 +198,18 @@ def pack_case(h5_dir, nc_dir):
     It also contains meta information like which channels are included and which h5 files
     went into making this case."""
     h5_dir, nc_dir = Path(h5_dir).resolve(), Path(nc_dir).resolve()
-    h5s = gather_h5s(h5_dir)
+    #h5s = gather_h5s(h5_dir)
     nc_dict = group_abi_by_time_sat(nc_dir)
-    paired = pair_h5s_with_ncs(h5s, nc_dict)
-    for h5, nc_list in paired:
-        x = [f['filename'] for f in nc_list]
-        if len(x) == 2:
-            log.info(f'{h5["filename"]} \n{x}')
+    for key, nc_list in nc_dict.items():
+        print(f'{bold}{key}{reset}')
+        for nc in nc_list:
+            print(f'{nc["filename"]}')
+        print()
+    #paired = pair_h5s_with_ncs(h5s, nc_dict)
+    #for h5, nc_list in paired:
+    #    x = [f['filename'] for f in nc_list]
+    #    if len(x) == 2:
+    #        log.info(f'{h5["filename"]} \n{x}')
     #files = [processed_file(pairs[datetime], col, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
     #npzs = [np.load(f) for f in files]
     #min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in npzs])
