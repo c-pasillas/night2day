@@ -214,7 +214,7 @@ def pack_case(h5_dir, nc_dir):
 
     print(f'There were {eleven_count}/{len(nc_dict)} groups with 11 files grouped.')
     print()
-    print(f'{bold}H5 file start times{reset}')
+    print(f'{bold}H5 file start times{reset} length is {len(h5s)}')
     h5_starts = sorted([f['start'] for f in h5s])
     for h5 in h5_starts:
         print(f'{h5}')
