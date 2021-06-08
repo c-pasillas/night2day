@@ -200,6 +200,7 @@ def pack_case(h5_dir, nc_dir):
     h5_dir, nc_dir = Path(h5_dir).resolve(), Path(nc_dir).resolve()
     h5s = gather_h5s(h5_dir)
     nc_dict = group_abi_by_time_sat(nc_dir)
+    log.info(f'nc_dict > {nc_dict}')
     paired = pair_h5s_with_ncs(h5s, nc_dict)
     for h5, nc_list in paired:
         log.info(f'{h5} \n{nc_list}')
