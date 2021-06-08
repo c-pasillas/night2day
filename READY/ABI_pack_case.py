@@ -203,7 +203,8 @@ def pack_case(h5_dir, nc_dir):
     paired = pair_h5s_with_ncs(h5s, nc_dict)
     for h5, nc_list in paired:
         x = [f['filename'] for f in nc_list]
-        log.info(f'{h5["filename"]} \n{len(x)}')
+        if len(x) == 2:
+            log.info(f'{h5["filename"]} \n{x}')
     #files = [processed_file(pairs[datetime], col, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
     #npzs = [np.load(f) for f in files]
     #min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in npzs])
