@@ -202,15 +202,17 @@ def pack_case(h5_dir, nc_dir):
     nc_dict = group_abi_by_time_sat(nc_dir)
 
     eleven_count = 0
-    for key, nc_list in nc_dict.items():
+    keys_in_order = sorted(nc_dict.keys())
+    for key in keys_in_order:
+        nc_list = sorted([f['filename'] for f in nc_dict[key]])
         if len(nc_list) == 11:
             eleven_count += 1
         print(f'{bold}{key}{reset}')
         for nc in nc_list:
-            print(f'{nc["filename"]}')
+            print(f'{nc}')
         print()
 
-    print(f'There were {eleven_count} groups with 11 files grouped.')
+    print(f'There were {eleven_count}/{len(nc_dict)} groups with 11 files grouped.')
     #paired = pair_h5s_with_ncs(h5s, nc_dict)
     #for h5, nc_list in paired:
     #    x = [f['filename'] for f in nc_list]
