@@ -43,7 +43,9 @@ def btd_and_norm(arr1, arr2, band1, band2):
 def all_btd_norms(case):
     """For several possible pairs of channels, compute the btd differences.
     Gather up all btd channels in a dictionary to return."""
-    pairs = list(it.product(('M12', 'M13', 'M14'), ('M15', 'M16'))) + [('M15', 'M16')]
+    c = ('M12', 'M13', 'M14', 'M15', 'M16')
+    pairs = list(filter(lambda pair: pair[0] != pair[1], it.product(c, c)))
+    pairs_old = list(it.product(('M12', 'M13', 'M14'), ('M15', 'M16'))) + [('M15', 'M16')]
     btds = [btd_and_norm(case[b1], case[b2], b1, b2) for b1, b2 in pairs]
     return {k: v for btd in btds for k, v in btd.items()}
 
