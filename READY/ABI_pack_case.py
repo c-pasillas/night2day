@@ -200,11 +200,17 @@ def pack_case(h5_dir, nc_dir):
     h5_dir, nc_dir = Path(h5_dir).resolve(), Path(nc_dir).resolve()
     #h5s = gather_h5s(h5_dir)
     nc_dict = group_abi_by_time_sat(nc_dir)
+
+    eleven_count = 0
     for key, nc_list in nc_dict.items():
+        if len(nc_list) == 11:
+            eleven_count += 1
         print(f'{bold}{key}{reset}')
         for nc in nc_list:
             print(f'{nc["filename"]}')
         print()
+
+    print(f'There were {eleven_count} groups with 11 files grouped.')
     #paired = pair_h5s_with_ncs(h5s, nc_dict)
     #for h5, nc_list in paired:
     #    x = [f['filename'] for f in nc_list]
