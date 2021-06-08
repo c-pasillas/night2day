@@ -1,5 +1,5 @@
-machine='zrain'
-#C4: "as-is" architecture, max value 1: use UNET, adjusted for the metrics, first real ML
-my_file_prefix='C1'
+machine='grain'
+#C4: /zdata2/cpasilla/MARCH2019_ALL/ML_INPUT/DNB_log_Miller)full_moon_norm-12_predictors "as-is" architecture, max value 1: use UNET, adjusted for the metrics, first real ML, full moon norm, 12 inputs
+my_file_prefix='LMFMN12'
 NN_string='UNET'
 batch_size=12
