@@ -66,7 +66,7 @@ def plotdata(truth, MLR, channel_name,figdir, nick):
    
     plt.legend()
     plt.title(channel_name + ' by count')
-    plt.savefig(figdir / f"{nick}_{channel_name}_MLR_histogram.png")
+    plt.savefig(figdir / f"fitted_{channel_name}_MLR_histogram.png")
     #plt.show()
     plt.close()
     
@@ -82,7 +82,7 @@ def plotdata(truth, MLR, channel_name,figdir, nick):
     plt.ylabel('frequency')
     plt.title(channel_name + ' PDFs')
     plt.legend()
-    plt.savefig(figdir / f"{nick}_{channel_name}_MLR_PDF.png")
+    plt.savefig(figdir / f"fitted_{channel_name}_MLR_PDF.png")
     #plt.show()
     plt.close()
     
@@ -91,17 +91,17 @@ def save_co_tables(table,filename):
     with open(filename,"w") as f:
         print(table, file =f)
 
-def ensure_figdir(npz_filename):
-    f= Path(npz_filename).resolve().parent / 'FIGURES'/ 'JUN03_FINAL'
+def ensure_figdir(npz_filename, nick):
+    f= Path(npz_filename).resolve().parent / 'SKL' / nick
     f.mkdir(exist_ok=True, parents=True)
     return f      
     
 #%%
 #MLR for numpy
 
-def MLR (filename, nick) :
+def MLR (filename, nick):
     log.info("starting MLR")
-    figdir=ensure_figdir(filename)
+    figdir=ensure_figdir(filename, nick)
     f = np.load(filename)
     #make predictor/predictand arraysand flatten for use
     X = np.stack([f[key].flatten() for key in predict_channels], axis = -1)
@@ -135,7 +135,7 @@ def MLR (filename, nick) :
         print(nick, file = f)
         print(d, file = f)
            
-               
+
     #save the model
     picklename = figdir / f'{nick}_MLR_{p}.pickle'
     with open(picklename, 'wb') as f:
