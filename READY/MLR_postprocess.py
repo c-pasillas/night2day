@@ -157,7 +157,7 @@ def process_channel(Ycol, MLRcol, c, figdir, nick, metdict, shape, denormed):
     
     #boxplots
     log.info(' making boxplots')
-    plt.boxplot([truth.flatten(), MLR_pred.flatten()] , labels=["truth", "MLR"], sym='');
+    plt.boxplot([truth.flatten(), MLR_pred.flatten()] , labels=["truth", "MLR"], sym='')
     plt.title(f'Data Point Distribution for {c}')
     plt.savefig(figdir / f"{nick}_{c}_boxplot.png")
     #plt.show()
@@ -165,10 +165,10 @@ def process_channel(Ycol, MLRcol, c, figdir, nick, metdict, shape, denormed):
     
     coledir = figdir / "RAWimages"
     coledir.mkdir(exist_ok=True, parents=True)
-    #for i in range(shape[0]):     
+    for i in range(shape[0]):
         #COLE PLOTTING
-       # show_byte_img(scale(truth_r[i], 5), name= coledir / f"{nick}_{c}_COLE_truth_{i}.png")
-       # show_byte_img(scale(MLR_pred_r[i], 5), name= coledir / f"{nick}_{c}_COLE_MLR_truth_{i}.png")
+        show_byte_img(scale(truth_r[i], 5), name= coledir / f"{nick}_{c}_COLE_truth_{i}.png")
+        show_byte_img(scale(MLR_pred_r[i], 5), name= coledir / f"{nick}_{c}_COLE_MLR_truth_{i}.png")
         
         
     truth_min, truth_max = np.nanmin(truth), np.nanmax(truth)
@@ -183,7 +183,9 @@ def process_channel(Ycol, MLRcol, c, figdir, nick, metdict, shape, denormed):
     # plotting image pair
     x=ERFimage_truth.reshape(shape)#[:2000]
     y=ERFimage_ML.reshape(shape)#[:2000]
-    
+
+    denormed[f'{c}_BVI'] = np.stack((y, x), axis=-1)
+
     imagedir = figdir / "ERFimages"
     imagedir.mkdir(exist_ok=True, parents=True)
     
