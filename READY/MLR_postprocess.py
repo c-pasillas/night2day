@@ -95,7 +95,7 @@ def save_co_tables(table,filename):
 
 def ensure_outputdir(npz_filename, nick):
     datasources = Path(npz_filename).resolve().parent.name
-    f= Path(npz_filename).resolve().parent / 'MODELS' / f'{datasources}_{nick}'
+    f= Path(npz_filename).resolve().parent / 'MLR' / f'{datasources}_{nick}'
     f.mkdir(exist_ok=True, parents=True)
     return f      
 
