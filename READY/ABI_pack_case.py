@@ -216,7 +216,7 @@ def pack_case(h5_dir, nc_dir):
     print()
     print(f'{bold}H5 file start times{reset} length is {len(h5s)}')
     h5_starts = sorted([f['start'] for f in h5s])
-    h5_starts = sorted(h5s, key=lambda h5: h5['start'])
+    #h5_starts = sorted(h5s, key=lambda h5: h5['start'])
     for h5 in h5_starts:
         print(f'{h5}')
     #paired = pair_h5s_with_ncs(h5s, nc_dict)
