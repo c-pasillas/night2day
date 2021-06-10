@@ -201,6 +201,7 @@ def pack_case(h5_dir, nc_dir):
     h5s = gather_h5s(h5_dir)
     nc_dict = group_abi_by_time_sat(nc_dir)
 
+    """
     eleven_count = 0
     keys_in_order = sorted(nc_dict.keys())
     for key in keys_in_order:
@@ -219,13 +220,15 @@ def pack_case(h5_dir, nc_dir):
     #h5_starts = sorted(h5s, key=lambda h5: h5['start'])
     for h5 in h5_starts:
         print(f'{h5}')
+    """
 
     paired = pair_h5s_with_ncs(h5s, nc_dict)
     paired_sorted = sorted(paired, key=lambda h5_ncs: h5_ncs[0]['start'])
     for h5, nc_list in paired_sorted:
+        print(f'{bold}{h5["start"]} -> {h5["end"]}{reset}')
         print(f'{h5["filename"]}')
-        print(f'{bold}{nc_list[0]["start"]}{reset}')
         nc_list = sorted([f['filename'] for f in nc_list])
+        print(f'{bold}{nc_list[0]["start"]} -> {nc_list[0]["end"]}{reset}')
         for nc in nc_list:
             print(f'{nc}')
         print()
