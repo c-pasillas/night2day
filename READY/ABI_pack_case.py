@@ -205,17 +205,18 @@ def pack_case(h5_dir, nc_dir):
     keys_in_order = sorted(nc_dict.keys())
     for key in keys_in_order:
         nc_list = sorted([f['filename'] for f in nc_dict[key]])
-        if len(nc_list) == 11:
+        if len(nc_list) == 16:
             eleven_count += 1
         print(f'{bold}{key}{reset}')
         for nc in nc_list:
             print(f'{nc}')
         print()
 
-    print(f'There were {eleven_count}/{len(nc_dict)} groups with 11 files grouped.')
+    print(f'There were {eleven_count}/{len(nc_dict)} groups with 16 files grouped.')
     print()
     print(f'{bold}H5 file start times{reset} length is {len(h5s)}')
     h5_starts = sorted([f['start'] for f in h5s])
+    h5_starts = sorted(h5s, key=lambda h5: h5['start'])
     for h5 in h5_starts:
         print(f'{h5}')
     #paired = pair_h5s_with_ncs(h5s, nc_dict)
