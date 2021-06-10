@@ -92,7 +92,7 @@ def save_co_tables(table,filename):
         print(table, file =f)
 
 def ensure_figdir(npz_filename, nick):
-    f= Path(npz_filename).resolve().parent / 'SKL' / nick
+    f= Path(npz_filename).resolve().parent / 'MLR' / f'model_{nick}'
     f.mkdir(exist_ok=True, parents=True)
     return f      
     
