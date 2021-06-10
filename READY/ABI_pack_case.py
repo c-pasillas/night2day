@@ -161,7 +161,7 @@ def parse_filename_abi(path):
             'start': start, 'end': end, 'path': str(path)}
 
 def gather_h5s(h5_dir):
-    return [parse_filename_dnb(f) for f in h5_dir.iterdir() if f.suffix == '.h5']
+    return [parse_filename_dnb(f) for f in h5_dir.iterdir() if f.suffix == '.h5' and 'DNB' in f.name]
 def group_abi_by_time_sat(nc_dir):
     ncs = [parse_filename_abi(f) for f in nc_dir.iterdir() if f.suffix == '.nc']
     def red(d, nc):
@@ -219,11 +219,17 @@ def pack_case(h5_dir, nc_dir):
     #h5_starts = sorted(h5s, key=lambda h5: h5['start'])
     for h5 in h5_starts:
         print(f'{h5}')
-    #paired = pair_h5s_with_ncs(h5s, nc_dict)
-    #for h5, nc_list in paired:
-    #    x = [f['filename'] for f in nc_list]
-    #    if len(x) == 2:
-    #        log.info(f'{h5["filename"]} \n{x}')
+
+    paired = pair_h5s_with_ncs(h5s, nc_dict)
+    paired_sorted = sorted(paired, key=lambda h5_ncs: h5_ncs[0]['start'])
+    for h5, nc_list in paired_sorted:
+        print(f'{h5["filename"]}')
+        print(f'{bold}{nc_list[0]["start"]}{reset}')
+        nc_list = sorted([f['filename'] for f in nc_list])
+        for nc in nc_list:
+            print(f'{nc}')
+        print()
+
     #files = [processed_file(pairs[datetime], col, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
     #npzs = [np.load(f) for f in files]
     #min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in npzs])
