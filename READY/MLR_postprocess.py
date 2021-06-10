@@ -157,10 +157,19 @@ def process_channel(Ycol, MLRcol, c, figdir, nick, metdict, shape, denormed):
     
     #boxplots
     log.info(' making boxplots')
-    plt.boxplot([truth.flatten(), MLR_pred.flatten()] , labels=["truth", "MLR"], sym='')
+    plt.boxplot([truth.flatten(), MLR_pred.flatten()], labels=["truth", "MLR"], sym='')
     plt.title(f'Data Point Distribution for {c}')
     plt.savefig(figdir / f"{nick}_{c}_boxplot.png")
-    #plt.show()
+    plt.close()
+
+    plt.boxplot(truth.flatten(), sym='')
+    plt.title(f'Data Point Distribution for {c} truth')
+    plt.savefig(figdir / f"{nick}_{c}_boxplot_truth.png")
+    plt.close()
+
+    plt.boxplot(MLR_pred.flatten(), sym='')
+    plt.title(f'Data Point Distribution for {c} MLR')
+    plt.savefig(figdir / f"{nick}_{c}_boxplot_MLR.png")
     plt.close()
     
     coledir = figdir / "RAWimages"
