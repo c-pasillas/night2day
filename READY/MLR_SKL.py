@@ -32,7 +32,7 @@ plt.rcParams['figure.figsize'] = (20,10)
 
 #determine what we care about
 predict_channels = ['M12norm','M13norm','M14norm','M15norm','M16norm','BTD1215norm','BTD1216norm','BTD1315norm',
-'BTD1316norm','BTD1415norm','BTD1416norm','BTD1516norm']
+'BTD1316norm','BTD1415norm','BTD1416norm','BTD1516norm'] #EDIT THE EXTRA CHANNELS HERE BEFORE CAN RERUN
 
 #predictand_channels = [ 'DNB_log_Miller_full_moon']
 #predictand_channels = ['DNB_log_norm']#,'DNB_log_full_moon_norm', 'DNB_log_new_moon_norm','DNB_log_Miller_full_moon']
