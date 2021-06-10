@@ -229,9 +229,9 @@ def pack_case(h5_dir, nc_dir):
         print(f'{h5["filename"]}')
         nc_list = sorted(nc_list, key=lambda nc: nc['start'])
         nc_first = nc_list[0]
-        print(f'nc_list first {nc_first}')
-        import sys
-        sys.exit()
+        #print(f'nc_list first {nc_first}')
+        #import sys
+        #sys.exit()
         print(f'{bold}{nc_first["start"]} -> {nc_first["end"]}{reset}')
         for nc in nc_list:
             print(f'{nc["filename"]}')
