@@ -16,12 +16,33 @@ import sys
 import seaborn as sb
 from matplotlib import style
 import pandas as pd
+import itertools as it
 from sklearn.preprocessing import StandardScaler
 import pickle
 scaler = StandardScaler()
-from common import log
+from common import log, bold, reset, yellow, blue, orange, rgb
 from pathlib import Path
 from datetime import datetime
+
+NSEW = 45, -2, -125, 145
+zero_one = [0, -1]
+
+def is_point_in_box(lat, long):
+    n, s, e, w = NSEW
+    if not s <= lat <= n:
+        return False
+    return (w <= long <= e) if w < e else (w <= long or long <= e)
+def corners(lat_p, long_p):
+    return [(lat_p[i], long_p[i]) for i in it.product(zero_one, zero_one)]
+def patch_in_box(patch, lats, longs):
+    cs = corners(lats[patch], longs[patch])
+    if all(it.starmap(is_point_in_box, cs)):
+        return True
+    log.info(f'Rejecting {yellow}out-of-bounds{reset} patch {patch}, with corners {list(cs)}')
+    return False
+def filter_patches(patch_list, lats, longs):
+    return [p for p in patch_list if patch_in_box(p, lats, longs)]
+
 
 mpl.rcParams['figure.facecolor'] = 'white'
 mpl.rcParams['figure.dpi']= 150
@@ -101,19 +122,24 @@ def ensure_figdir(npz_filename, nick):
 
 def MLR (filename, nick):
     log.info("starting MLR")
-    figdir=ensure_figdir(filename, nick)
+    figdir = ensure_figdir(filename, nick)
     f = np.load(filename)
-    #make predictor/predictand arraysand flatten for use
-    X = np.stack([f[key].flatten() for key in predict_channels], axis = -1)
-    Y = np.stack([f[key].flatten() for key in predictand_channels], axis = -1)
+    # make predictor/predictand arraysand flatten for use
+    X = np.stack([f[key].flatten() for key in predict_channels], axis=-1)
+    Y = np.stack([f[key].flatten() for key in predictand_channels], axis=-1)
+
+    lats, longs = f['latitude'], f['longitude']
+    in_bounds = filter_patches(range(len(lats)), lats, longs)
+    X, Y = X[in_bounds], Y[in_bounds]
+
     log.info("fitting MLR")
     regOLS = linear_model.LinearRegression(normalize=False, fit_intercept=True)   
     regOLS.fit(X, Y)
     
-   #get the R2 
-    MLR_truths =regOLS.predict(X)
+    # get the R2
+    MLR_truths = regOLS.predict(X)
     
-    d= {}
+    d = {}
     
     for i,c in enumerate(predictand_channels):
         Ycol = Y[:,i]

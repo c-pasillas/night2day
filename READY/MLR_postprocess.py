@@ -174,10 +174,11 @@ def process_channel(Ycol, MLRcol, c, figdir, nick, metdict, shape, denormed):
     
     coledir = figdir / "RAWimages"
     coledir.mkdir(exist_ok=True, parents=True)
+    should_invert = 'log' in c
     for i in range(shape[0]):
         #COLE PLOTTING
-        show_byte_img(scale(truth_r[i], 5), name= coledir / f"{nick}_{c}_COLE_truth_{i}.png")
-        show_byte_img(scale(MLR_pred_r[i], 5), name= coledir / f"{nick}_{c}_COLE_MLR_truth_{i}.png")
+        show_byte_img(scale(truth_r[i], 5, invert=should_invert), name= coledir / f"{nick}_{c}_COLE_truth_{i}.png")
+        show_byte_img(scale(MLR_pred_r[i], 5, invert=should_invert), name= coledir / f"{nick}_{c}_COLE_MLR_truth_{i}.png")
         
         
     truth_min, truth_max = np.nanmin(truth), np.nanmax(truth)
