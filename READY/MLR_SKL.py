@@ -5,6 +5,7 @@
 #.............................................
 # IMPORT STATEMENTS
 #.............................................
+import pprint
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -156,21 +157,16 @@ def MLR (filename, nick):
         
     p= predictand_channels[0] if len(predictand_channels) == 1 else 'ALL'
     with open (figdir / f'{nick}_MLR_{p}_eventlog.txt', 'w') as f:
-        x=Path(filename).resolve().parent.name     
+        x = Path(filename).resolve().parent.name
         print(datetime.now(), file = f)
-        print(x, file = f)
-        print(nick, file = f)
-        print(d, file = f)
+        print(x, file=f)
+        print(nick, file=f)
+        # print(d, file=f)
+        pprint.pprint(d, stream=f)
            
 
     #save the model
     picklename = figdir / f'{nick}_MLR_{p}.pickle'
     with open(picklename, 'wb') as f:
               pickle.dump(regOLS, f)
-
-   
-
-
-
-    
 
