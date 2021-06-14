@@ -128,6 +128,7 @@ def MLR (filename, nick):
     X = np.stack([f[key].flatten() for key in predict_channels], axis=-1)
     Y = np.stack([f[key].flatten() for key in predictand_channels], axis=-1)
 
+    log.info("Filtering images based on AOI")
     lats, longs = f['latitude'], f['longitude']
     in_bounds = filter_patches(range(len(lats)), lats, longs)
     X, Y = X[in_bounds], Y[in_bounds]
