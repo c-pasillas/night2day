@@ -126,12 +126,13 @@ def MLR (filename, nick):
     figdir = ensure_figdir(filename, nick)
     f = np.load(filename)
     # make predictor/predictand arraysand flatten for use
-    X = np.stack([f[key].flatten() for key in predict_channels], axis=-1)
-    Y = np.stack([f[key].flatten() for key in predictand_channels], axis=-1)
-
     log.info("Filtering images based on AOI")
     lats, longs = f['latitude'], f['longitude']
     in_bounds = filter_patches(range(len(lats)), lats, longs)
+    log.info(f'in_bounds len {len(in_bounds)} / {len(lats)}')
+
+    X = np.stack([f[key].flatten() for key in predict_channels], axis=-1)
+    Y = np.stack([f[key].flatten() for key in predictand_channels], axis=-1)
     X, Y = X[in_bounds], Y[in_bounds]
 
     log.info("fitting MLR")
