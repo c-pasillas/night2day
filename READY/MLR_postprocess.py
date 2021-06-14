@@ -204,7 +204,7 @@ def process_channel(Ycol, MLRcol, c, figdir, nick, metdict, shape, denormed):
         log.info(f'processing {i} image plotting')
         #ERF PLOTTING
         img = x[i]
-        imgplot = plt.imshow(img, cmap='gray', vmin=2000, vmax=5000)
+        imgplot = plt.imshow(img, cmap='gray')#, vmin=2000, vmax=5000)
         plt.grid (False)
         plt.title('ERF imagery truth')
         plt.colorbar()
@@ -213,7 +213,7 @@ def process_channel(Ycol, MLRcol, c, figdir, nick, metdict, shape, denormed):
         plt.close()
 
         img2 = y[i]
-        imgplot= plt.imshow(img2, cmap='gray',vmin=2000, vmax=5000)
+        imgplot= plt.imshow(img2, cmap='gray')#,vmin=2000, vmax=5000)
         plt.grid (False)
         plt.title("ERF imagery ML")
         plt.colorbar()
