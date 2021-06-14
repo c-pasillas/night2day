@@ -25,7 +25,7 @@ from common import log, bold, reset, yellow, blue, orange, rgb
 from pathlib import Path
 from datetime import datetime
 
-NSEW = 45, -2, -125, 145
+NSEW = 45, -15, -125, 150
 zero_one = [0, -1]
 
 def is_point_in_box(lat, long):
