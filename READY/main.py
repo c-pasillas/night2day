@@ -79,7 +79,7 @@ VIIRS_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
 aoi_p = subparsers.add_parser('aoi', help='Filter based of Area of Interest')
 aoi_p.set_defaults(func=aoi.aoi)
 aoi_p.add_argument('npz_path', help='Path to npz file')
-aoi_p.add_argument('--quarter', action='store_true', help='Should cut images into quarters before filtering')
+aoi_p.add_argument('--patch', action='store_true', help='Cut images into patches before filtering')
 aoi_p.add_argument('NSEW', type=int, nargs=4, help='NSEW bounding box')
 aoi_p.add_argument('-q', '--quiet', action='count', default=0)
 

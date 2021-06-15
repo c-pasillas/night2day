@@ -47,7 +47,7 @@ def aoi(args):
         NSEW = 45, -5, -105, 105
     log.info(f"Filtering images based on AOI {NSEW}")
     f = np.load(path)
-    a_patches = all_patches(*f['DNB'].shape)
+    a_patches = all_patches(*f['DNB'].shape) if args.patch else range(len(f['DNB']))
     aoi_patches = filter_patches(a_patches, f['latitude'], f['longitude'])
     log.info(f'Kept patches: {len(aoi_patches)} / {len(a_patches)}')
 
