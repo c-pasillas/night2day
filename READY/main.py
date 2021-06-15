@@ -35,13 +35,8 @@ def shell_setup():
 
 def status(args):
     log.info("here")
-def VIIRS_pack_case_cmd(args):
-    VIIRS_pack_case.pack_case(args.path) #.py file then the Def/fxn in the file
 def ABI_pack_case_cmd(args):
     ABI_pack_case.pack_case(args.h5_dir, args.nc_dir)
-def normalize_cmd(args):
-    db_path = common.locate_db(None)
-    normalize.normalize(db_path)
 def learning_cmd(args):
     db_path = common.locate_db(None)
     learning_prep.learning_prep(db_path)
@@ -91,7 +86,8 @@ ABI_pack_case_p.add_argument('nc_dir')
 ABI_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
 
 norm_p = subparsers.add_parser('normalize', help='Normalize and derive channels')
-norm_p.set_defaults(func=normalize_cmd)
+norm_p.set_defaults(func=normalize.normalize)
+norm_p.add_argument('npz_path', help='Path to npz file')
 norm_p.add_argument('-q', '--quiet', action='count', default=0)
 
 learn_p = subparsers.add_parser('learn-prep', help='Create file for input to learning')
