@@ -106,10 +106,10 @@ def ERF(arr, label):
 
 def show_byte_img(arr, name='temp.png', **args):
     clip_lo, clip_hi = np.array([np.sum(arr < 0), np.sum(arr > 256)]) * 100 / arr.size
-    print(f'clipping low/high: {clip_lo:.1f}% {clip_hi:.1f}%')
+    # print(f'clipping low/high: {clip_lo:.1f}% {clip_hi:.1f}%')
     b = arr.clip(min=0, max=255).astype('uint8')
     Image.fromarray(b).save(name)
-    #dis.display(dis.Image(name, **args))
+    # dis.display(dis.Image(name, **args))
 
 def standardize(arr, mean=150, std_dev=50, invert=1):
     norm = (arr - arr.mean()) / arr.std()
@@ -122,11 +122,11 @@ def scale(arr, percent_tail=2, percent_top=None, invert=False):
     normi = norm * (1 if not invert else -1)
     sort_arr = np.sort(normi.flatten())
     left, right = int(sort_arr.size * left / 100), int(sort_arr.size * right / 100)
-    print(f'left={left} right={right}')
+    # print(f'left={left} right={right}')
     lo, hi = sort_arr[left], sort_arr[-(1 + right)]
     byte_scale = 256 / (hi - lo)
     offset = 0 - lo * byte_scale
-    print(f'byte_scale={byte_scale:.2f} offset={offset:.2f}')
+    # print(f'byte_scale={byte_scale:.2f} offset={offset:.2f}')
     return (normi * byte_scale) + offset
 
 def process_channel(Ycol, MLRcol, c, figdir, nick, metdict, shape, denormed):
