@@ -43,8 +43,6 @@ def learning_cmd(args):
 def model_val_cmd(args):
     db_path = common.locate_db(None)
     model_validation.model_val(db_path)
-def MLR_postprocess_cmd(args):
-    MLR_postprocess.postprocess(args.npzfilename, args.modelname, args.nick)
 def MLR_cmd(args):
     MLR_SKL.MLR(args.npzfilename, args.nick)
 def scatter_cmd(args):
@@ -106,12 +104,12 @@ MLR_p.add_argument('npz_path', help='Path to npz file')
 MLR_p.add_argument('models_path', help='Path to models directory')
 MLR_p.add_argument('nick', help='Name to create new folder structure')
 
-MLR_post = subparsers.add_parser('MLR_post', help='take npz and model and make final data sets')
-MLR_post.set_defaults(func=MLR_postprocess_cmd)
+MLR_post = subparsers.add_parser('MLR-post', help='take npz and model and make final data sets')
+MLR_post.set_defaults(func=MLR_postprocess.postprocess)
 MLR_post.add_argument('-q', '--quiet', action='count', default=0)
-MLR_post.add_argument('npzfilename' )
-MLR_post.add_argument('modelname' )
-MLR_post.add_argument('nick' )
+MLR_post.add_argument('npz_path', help='Path to npz file')
+MLR_post.add_argument('model_path', help='Path to model .pickle file')
+MLR_post.add_argument('nick', help='Name to create new folder structure')
 
 
 scatter_p = subparsers.add_parser('scatter', help='take final MLR/truth and make scatter plots')

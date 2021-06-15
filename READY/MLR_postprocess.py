@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-
-
-#.............................................
-# IMPORT STATEMENTS
-#.............................................
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -24,6 +19,7 @@ from pathlib import Path
 from datetime import datetime
 import normalize
 from PIL import Image
+import pprint
 
 mpl.rcParams['figure.facecolor'] = 'white'
 mpl.rcParams['figure.dpi']= 150
@@ -39,7 +35,8 @@ predict_channels = ['M12norm','M13norm','M14norm','M15norm','M16norm','BTD1215no
 #predictand_channels = [ 'DNB_log_Miller_full_moon']
 #predictand_channels = ['DNB_log_norm']#,'DNB_log_full_moon_norm', 'DNB_log_new_moon_norm','DNB_log_Miller_full_moon']
 
-predictand_channels = ['DNB_norm', 'DNB_full_moon_norm', 'DNB_new_moon_norm', 'DNB_log_norm','DNB_log_full_moon_norm', 'DNB_log_new_moon_norm','DNB_log_Miller_full_moon']
+predictand_channels = ['DNB_norm', 'DNB_full_moon_norm', 'DNB_new_moon_norm', 'DNB_log_norm',
+                       'DNB_log_full_moon_norm', 'DNB_log_new_moon_norm','DNB_log_Miller_full_moon']
 
 #%%
 #helper function for plotting histogram and PDFs
@@ -90,17 +87,15 @@ def plotdata(truth, MLR, channel_name,figdir, nick):
     
 #helper save co stuff
 def save_co_tables(table,filename):
-    with open(filename,"w") as f:
-        print(table, file =f)
+    with open(filename, "w") as f:
+        print(table, file=f)
 
-def ensure_outputdir(npz_filename, nick):
-    datasources = Path(npz_filename).resolve().parent.name
-    f= Path(npz_filename).resolve().parent / 'MLR' / f'{datasources}_{nick}'
+def ensure_outputdir(model_path, npz_path, nick):
+    datasources = npz_path.parent.name
+    f = model_path.parent / f'post_{datasources}_{nick}'
     f.mkdir(exist_ok=True, parents=True)
     return f      
 
-#helpers of the helper channel
-                 
 def ERF(arr, label):
      # take the radiances and use the ERF display image scale
     log.info(f'there are this many NANS {np.sum(np.isnan(arr))}')
@@ -135,8 +130,6 @@ def scale(arr, percent_tail=2, percent_top=None, invert=False):
     print(f'byte_scale={byte_scale:.2f} offset={offset:.2f}')
     return (normi * byte_scale) + offset
 
-
-#helper one channel
 def process_channel(Ycol, MLRcol, c, figdir, nick, metdict, shape, denormed):
     R2 = metrics.r2_score(Ycol, MLRcol)
     RMSE = metrics.mean_squared_error(Ycol, MLRcol, squared =False)
@@ -220,43 +213,36 @@ def process_channel(Ycol, MLRcol, c, figdir, nick, metdict, shape, denormed):
         plt.savefig(imagedir / f"{nick}_{c}_ERF_MLR_truth_{i}.png")
         #plt.show()
         plt.close()
-  
-    
-#MLR 
 
-def postprocess (npzfilename, modelfilename, nick) :
+def postprocess(args):
+    npz_path = Path(args.npz_path).resolve()
+    model_path = Path(args.model_path).resolve()
+    nick = args.nick
     log.info("starting MLR postprocessing")
-    figdir=ensure_outputdir(npzfilename, nick)
-    f = np.load(npzfilename)
+    out_dir = ensure_outputdir(model_path, npz_path, nick)
+    f = np.load(npz_path)
     shape = f['DNB_norm'].shape
-    #make predictor/predictand arraysand flatten for use
-    X = np.stack([f[key].flatten() for key in predict_channels], axis = -1)
-    Y = np.stack([f[key].flatten() for key in predictand_channels], axis = -1)
+    # make predictor/predictand arraysand flatten for use
+    X = np.stack([f[key].flatten() for key in predict_channels], axis=-1)
+    Y = np.stack([f[key].flatten() for key in predictand_channels], axis=-1)
     
-    with open (modelfilename, 'rb') as g:
+    with open (model_path, 'rb') as g:
         model = pickle.load(g)
-   #get the R2 
-    MLR_truths =model.predict(X)
-    
-    metdict= {}
-    
-    denormed = {}
-    
-    for i,c in enumerate(predictand_channels):
+    MLR_truths = model.predict(X)
+    metdict, denormed = {}, {}
+    for i, c in enumerate(predictand_channels):
         Ycol = Y[:,i]
         MLRcol = MLR_truths[:,i]
-        process_channel(Ycol, MLRcol, c, figdir, nick, metdict, shape, denormed)
+        process_channel(Ycol, MLRcol, c, out_dir, nick, metdict, shape, denormed)
                      
-    p= predictand_channels[0] if len(predictand_channels) == 1 else 'ALL'
-    
-    np.savez(figdir / f'{nick}_MLR_{p}_denormed_true_pred.npz', **denormed)
-    
-    with open (figdir / f'{nick}_MLR_{p}_postprocess_eventlog.txt', 'w') as f:
-        x=Path(npzfilename).resolve().parent.name     
-        print(datetime.now(), file = f)
-        print(x, file = f)
-        print(nick, file = f)
-        print(metdict, file = f)
+    p = predictand_channels[0] if len(predictand_channels) == 1 else 'ALL'
+    np.savez(out_dir / f'{nick}_MLR_{p}_denormed_true_pred.npz', **denormed)
+    with open (out_dir / f'{nick}_MLR_{p}_postprocess_eventlog.txt', 'w') as f:
+        x = Path(npz_path).resolve().parent.name
+        print(datetime.now(), file=f)
+        print(x, file=f)
+        print(nick, file=f)
+        pprint.pprint(metdict, stream=f)
            
     
                  
