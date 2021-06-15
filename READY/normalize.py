@@ -129,7 +129,7 @@ def normalize_case(case):
     log.info(f'Computing normalized {orange}DNB derivatives{reset}')
     dnb_norms = dnb_derive(case['DNB'])
     ch = list(case['channels']) + list(bandnorms) + list(btd_norms) + list(dnb_norms)
-    return {**bandnorms, **btd_norms, **dnb_norms, 'channels': ch}
+    return {**case, **bandnorms, **btd_norms, **dnb_norms, 'channels': ch}
 
 def show_stats(norm):
     for name, arr in norm.items():
