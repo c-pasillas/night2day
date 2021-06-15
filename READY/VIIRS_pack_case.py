@@ -6,6 +6,7 @@ import sqlite3
 import time
 from collections import defaultdict
 from satpy import Scene
+import sys
 
 import common
 from common import log, rgb, reset, blue, orange, bold
@@ -85,7 +86,7 @@ def fill_in_nan_array(case, channels):
     d.clip(1e-11, out=d)
     
 
-def process_pair(pair, out_path: Path, filename: Path):
+def process_pair(pair, image_dir: Path, curr_idx, len_pairs):
     """Pair is a list of two parsed filenames (see the function parse_filename below).
     Given these two files, use Scene to load the appropriate channels.
     Then save these original channels (.png and optionally .nc files).
@@ -93,41 +94,31 @@ def process_pair(pair, out_path: Path, filename: Path):
     Then save these colocated channels.
     Crop the NaN edges, tag with meta information (which files were used as input),
     And finally save the numpy arrays (so we don't need to recompute next time)"""
-    log.info(f'Colocating {blue}{pair[0]["datetime"]}{reset}')
+    log.info(f'{rgb(255,0,0)}Processing{reset} timestep {bold}{curr_idx + 1}/{len_pairs}{reset}')
+    dt = pair[0]["datetime"]
+    log.info(f'Colocating {blue}{dt}{reset}')
     scn = Scene(reader='viirs_sdr', filenames=[f['path'] for f in pair])
     scn.load(all_channels + lat_long_both)
-    save_datasets(scn, 'ORIGINAL_', str(out_path))
+    save_datasets(scn, 'ORIGINAL_', str(image_dir))
 
-    log.info(f'Resampling {blue}{pair[0]["datetime"]}{reset}')
+    log.info(f'Resampling {blue}{dt}{reset}')
     resample_scn = scn.resample(scn['DNB'].attrs['area'], resampler='nearest')
 
-    log.info(f'Saving images {blue}{pair[0]["datetime"]}{reset}')
+    log.info(f'Saving images {blue}{dt}{reset}')
     t = time.time()
-    save_datasets(resample_scn, 'COLOCATED_', str(out_path))
+    save_datasets(resample_scn, 'COLOCATED_', str(image_dir))
     log.debug(f'Saving images took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
 
-    log.info(f'Cropping nan edges of {blue}{pair[0]["datetime"]}{reset}')
+    log.info(f'Cropping nan edges of {blue}{dt}{reset}')
     t = time.time()
     data = crop_nan_edges(resample_scn)
     log.debug(f'Cropping nan edges took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
 
     data['channels'] = list(data)
     data['filenames'] = [f['filename'] for f in pair]
-    log.info(f'Saving {blue}{filename.name}{reset}')
-    np.savez(filename, **data)
+    return data
 
 # TODO report NaN in the samples
-
-def processed_file(pair, out_path: Path, curr_idx, len_pairs):
-    """Given a pair of parsed filenames, compute the colocated and NaN cropped array data.
-    If this work has previously been done, we can just read the array data from the saved file."""
-    f = out_path / (pair[0]['datetime'] + '.npz')
-    log.debug(f'{rgb(255,0,0)}Processing{reset} timestep {bold}{curr_idx + 1}/{len_pairs}{reset}')
-    if not f.exists():
-        process_pair(pair, out_path, f)
-    else:
-        log.debug(f'Using previously computed {blue}{pair[0]["datetime"]}{reset}')
-    return f
 
 # File name: GDNBO-SVDNB_j01_d20200110_t1031192_e1036592_b*
 def parse_filename(path):
@@ -152,49 +143,42 @@ def group_by_datetime(h5s):
         p[dt] = h5_list
     return paired, unpaired
 
-def h5_dir_name(db_path):
-    conn = sqlite3.connect(db_path)
-    dir_name = conn.execute('select value from Settings where name=?', ('h5_dir_name',)).fetchone()[0]
-    conn.close()
-    return db_path.parent / dir_name #"RAWDATA" #dir_name
-
 def grouped_h5s(h5_dir):
     h5s = [parse_filename(f) for f in h5_dir.iterdir() if f.suffix == '.h5']
     return group_by_datetime(h5s)
 
-def ensure_colocated(db_path):
-    col = db_path.parent / 'COLOCATED'
+def ensure_image_dir(path):
+    col = path.parent / 'IMAGES'
     col.mkdir(exist_ok=True)
     return col
 
 # TODO make main entry to find unpaired samples
 # TODO version that takes path to folder directly
 #      then have this main command & control method call that
-def pack_case(db_path: Path):
+def pack_case(args):
     """Scan for h5 files, pair them by datetime, colocate and save them separately,
     then gather all samples together, crop to the minimum size, and save the entire
     case worth of channel data to a file, case.npz.
     This file, case.npz, contains each of the channels as separate array data.
     It also contains meta information like which channels are included and which h5 files
     went into making this case."""
-    h5_dir = h5_dir_name(db_path)
-    pairs, unpaired = grouped_h5s(h5_dir)
+    path = Path(args.h5_dir).resolve()
+    pairs, unpaired = grouped_h5s(path)
+    if len(pairs) == 0:
+        log.info(f"Error, couldn't find any .h5 files in {path}")
+        sys.exit(-1)
     if unpaired:
         log.info(f'{rgb(255,0,0)}Unpaired h5s{reset} {unpaired}')
-    col = ensure_colocated(db_path)
-    files = [processed_file(pairs[datetime], col, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
-    npzs = [np.load(f) for f in files]
-    min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in npzs])
-    channels = npzs[0]['channels']
-    case = {c: np.stack(tuple(npz[c][:min_rows, :min_cols] for npz in npzs)) for c in channels}
+    image_dir = ensure_image_dir(path)
+    datas = [process_pair(pairs[datetime], image_dir, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
+    min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in datas])
+    channels = datas[0]['channels']
+    case = {c: np.stack(tuple(d[c][:min_rows, :min_cols] for d in datas)) for c in channels}
     fill_in_nan_array(case, channels)
     case['channels'] = channels
-    case['samples'] = [Path(f).stem for f in files]
-    filename = db_path.parent / 'case.npz'
+    filename = path / 'full_case.npz'
     log.info(f'Writing {blue}{filename.name}{reset}\n' +
-             f'{orange}Channels{reset} {channels}\n{orange}Samples{reset} {case["samples"]}')
+             f'{orange}Channels{reset} {channels}\n{orange}')
     np.savez(filename, **case)
-    for npz in npzs:
-        npz.close()
     log.info(f'Wrote {blue}{filename.name}{reset}')
 

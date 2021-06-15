@@ -17,6 +17,7 @@ import model_validation
 import MLR_SKL
 import MLR_postprocess
 import scatter
+import aoi
 
 def shell_setup():
     bin_dir = Path.home() / 'bin'
@@ -31,20 +32,11 @@ def shell_setup():
 #   add to PATH (if not already there) by adding to .profile and .zshrc
 #   export PATH="$HOME/bin:$PATH"
 
-def recent(args):
-    # create or read home folder db
-    pass
+
 def status(args):
     log.info("here")
-def info(args):
-    pass
-def log_cmd(args):
-    pass
 def VIIRS_pack_case_cmd(args):
-    db_path = common.locate_db(None)
-    if not db_path:
-        db_path = common.create_db(".")
-    VIIRS_pack_case.pack_case(db_path) #.py file then the Def/fxn in the file
+    VIIRS_pack_case.pack_case(args.path) #.py file then the Def/fxn in the file
 def ABI_pack_case_cmd(args):
     ABI_pack_case.pack_case(args.h5_dir, args.nc_dir)
 def normalize_cmd(args):
@@ -55,14 +47,11 @@ def learning_cmd(args):
     learning_prep.learning_prep(db_path)
 def model_val_cmd(args):
     db_path = common.locate_db(None)
-    model_validation.model_val(db_path) 
-
+    model_validation.model_val(db_path)
 def MLR_postprocess_cmd(args):
-    MLR_postprocess.postprocess(args.npzfilename, args.modelname, args.nick) 
-
+    MLR_postprocess.postprocess(args.npzfilename, args.modelname, args.nick)
 def MLR_cmd(args):
-    MLR_SKL.MLR(args.npzfilename, args.nick)   
-
+    MLR_SKL.MLR(args.npzfilename, args.nick)
 def scatter_cmd(args):
     scatter.scatter(args.npzfilename, args.nick, args.samplesize)      
 
@@ -82,8 +71,16 @@ msg = (f'Pack a case into a single array',
        '''Process and pack a case into a single array.
        Matches time-correlated images, regularizes dimensions across all images.''')
 VIIRS_pack_case_p = subparsers.add_parser('VIIRS-pack-case', help=msg[0], description=msg[1])
-VIIRS_pack_case_p.set_defaults(func=VIIRS_pack_case_cmd)
+VIIRS_pack_case_p.set_defaults(func=VIIRS_pack_case.pack_case)
+VIIRS_pack_case_p.add_argument('h5_dir', help='Path to directory with the .h5 files')
 VIIRS_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
+
+aoi_p = subparsers.add_parser('aoi', help='Filter based of Area of Interest')
+aoi_p.set_defaults(func=aoi.aoi)
+aoi_p.add_argument('npz_path', help='Path to npz file')
+aoi_p.add_argument('--quarter', action='store_true', help='Should cut images into quarters before filtering')
+aoi_p.add_argument('NSEW', type=int, nargs=4, help='NSEW bounding box')
+aoi_p.add_argument('-q', '--quiet', action='count', default=0)
 
 ABI_pack_case_p = subparsers.add_parser('ABI-pack-case')
 ABI_pack_case_p.set_defaults(func=ABI_pack_case_cmd)
