@@ -64,7 +64,7 @@ predictand_channels = ['DNB_norm', 'DNB_full_moon_norm', 'DNB_new_moon_norm', 'D
 #%%
 #helper function for plotting histogram and PDFs
 
-def plotdata(truth, MLR, channel_name,figdir, nick):
+def plotdata(truth, MLR, channel_name, figdir, nick):
     Y1 = scaler.fit_transform(truth.reshape(-1,1))
     Y2 = scaler.fit_transform(MLR.reshape(-1,1))
 
@@ -113,18 +113,20 @@ def save_co_tables(table,filename):
     with open(filename,"w") as f:
         print(table, file =f)
 
-def ensure_figdir(npz_filename, nick):
-    f= Path(npz_filename).resolve().parent / 'MLR' / f'model_{nick}'
+def ensure_outdir(models_path, npz_path, nick):
+    f = models_path / 'MLR' / f'{npz_path.parent.name}_{nick}'
     f.mkdir(exist_ok=True, parents=True)
-    return f      
-    
-#%%
-#MLR for numpy
+    fig = f / 'FIGURES'
+    fig.mkdir(exist_ok=True, parents=True)
+    return f, fig
 
-def MLR (filename, nick):
+def MLR(args):
+    npz_path = Path(args.npz_path).resolve()
+    models_path = Path(args.models_path).resolve()
+    nick = args.nick
     log.info("starting MLR")
-    figdir = ensure_figdir(filename, nick)
-    f = np.load(filename)
+    outdir, figdir = ensure_outdir(models_path, npz_path, nick)
+    f = np.load(npz_path)
     # make predictor/predictand arraysand flatten for use
     log.info("Filtering images based on AOI")
     lats, longs = f['latitude'], f['longitude']
@@ -138,12 +140,9 @@ def MLR (filename, nick):
     log.info("fitting MLR")
     regOLS = linear_model.LinearRegression(normalize=False, fit_intercept=True)   
     regOLS.fit(X, Y)
-    
-    # get the R2
+
     MLR_truths = regOLS.predict(X)
-    
     d = {}
-    
     for i,c in enumerate(predictand_channels):
         Ycol = Y[:,i]
         MLRcol = MLR_truths[:,i]
@@ -154,20 +153,16 @@ def MLR (filename, nick):
         log.info(f'{c} y variance explained by all predictors fit = ' + str(np.round(R2,5)))
         log.info(f'{c} RMSE = ' + str(np.round(RMSE,5)))
         log.info(f'{c} MAE = ' + str(np.round(MAE,5)))
-        plotdata(Ycol, MLRcol, c,figdir, nick)
+        plotdata(Ycol, MLRcol, c, figdir, nick)
         
-    p= predictand_channels[0] if len(predictand_channels) == 1 else 'ALL'
-    with open (figdir / f'{nick}_MLR_{p}_eventlog.txt', 'w') as f:
-        x = Path(filename).resolve().parent.name
+    p = predictand_channels[0] if len(predictand_channels) == 1 else 'ALL'
+    with open(outdir / f'{nick}_MLR_{p}_eventlog.txt', 'w') as f:
+        x = Path(npz_path).resolve().parent.name
         print(datetime.now(), file = f)
         print(x, file=f)
         print(nick, file=f)
-        # print(d, file=f)
         pprint.pprint(d, stream=f)
-           
-
-    #save the model
-    picklename = figdir / f'{nick}_MLR_{p}.pickle'
+    picklename = outdir / f'{nick}_MLR_{p}.pickle'
     with open(picklename, 'wb') as f:
-              pickle.dump(regOLS, f)
+        pickle.dump(regOLS, f)
 
