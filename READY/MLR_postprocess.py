@@ -35,9 +35,8 @@ predict_channels = ['M12norm','M13norm','M14norm','M15norm','M16norm','BTD1215no
 #predictand_channels = [ 'DNB_log_Miller_full_moon']
 #predictand_channels = ['DNB_log_norm']#,'DNB_log_full_moon_norm', 'DNB_log_new_moon_norm','DNB_log_Miller_full_moon']
 
-predictand_channels = ['DNB_norm', 'DNB_full_moon_norm', 'DNB_new_moon_norm', 'DNB_log_norm',
-                       'DNB_log_full_moon_norm', 'DNB_log_new_moon_norm','DNB_log_Miller_full_moon']
-
+predictand_channels = ['DNB_norm', 'DNB_full_moon_norm',
+                       'DNB_log_norm', 'DNB_log_full_moon_norm', 'DNB_log_Miller_full_moon']
 #%%
 #helper function for plotting histogram and PDFs
 
