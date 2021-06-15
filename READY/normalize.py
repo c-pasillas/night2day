@@ -6,7 +6,23 @@ import time
 import common
 from common import log, reset, blue, yellow, orange, bold
 
-bounds = {'M12': [230, 353],
+bounds = {#'C01':
+          #'C02':
+          #'C03':
+          #'C04':
+          #'C05':
+          #'C06':
+          #'C07':
+          #'C08':
+          #'C09':
+          #'C10':
+          #'C11':
+          #'C12':
+          #'C13':
+          #'C14':
+          #'C15':
+          #'C16':[,],
+          'M12': [230, 353],
           'M13': [230, 634],
           'M14': [190, 336],
           'M15': [190, 343],
@@ -22,7 +38,7 @@ def normalize_band(arr, band):
     ret.clip(max=1, out=ret)
     return band + 'norm', ret
 
-def m_band_norms(case):
+def band_norms(case):
     """Given a case with array data for each raw channel,
     produce a dictionary with each of the normalized channels."""
     return dict(normalize_band(case[band], band) for band in bounds)
@@ -100,18 +116,18 @@ def dnb_derive(dnb_arr):
     return r
 
 def normalize_case(case):
-    """Given a case with the original channels (DNB and M bands), compute the various
+    """Given a case with the original channels (DNB and M/C bands), compute the various
     normalized and derived channels. It computes and combines normalized M bands, BTDs between
-    pairs of M bands, and DNB derivatives."""
+    pairs of M/C bands, and DNB derivatives."""
     log.info(f'Computing normalized {orange}M bands{reset}')
-    m_norms = m_band_norms(case)
+    bandnorms = band_norms(case)
     log.info(f'Computing normalized {orange}BTDs{reset}')
     btd_norms = all_btd_norms(case)
     log.info(f'Computing normalized {orange}DNB derivatives{reset}')
     dnb_norms = dnb_derive(case['DNB'])
-    ch = list(case['channels']) + list(m_norms) + list(btd_norms) + list(dnb_norms)
+    ch = list(case['channels']) + list(bandnorms) + list(btd_norms) + list(dnb_norms)
     case['channels'] = ch
-    return {**case, **m_norms, **btd_norms, **dnb_norms}
+    return {**case, **bandnorms, **btd_norms, **dnb_norms}
 
 def show_stats(norm):
     for name, arr in norm.items():
@@ -121,13 +137,13 @@ def show_stats(norm):
 def normalize(db_path: Path):
     """Load case.npz, calculate normalized channels,
     then save all channel data out to case_norm.npz."""
-    case_file = db_path.parent / 'casereduced.npz'
+    case_file = db_path.parent / 'case.npz'
     log.info(f'Loading {blue}{case_file.name}{reset}')
     with np.load(case_file) as f:
         case = dict(f)
     norm = normalize_case(case)
     show_stats(norm)
-    norm_file = db_path.parent / 'casereduced_norm.npz'
+    norm_file = db_path.parent / 'case_norm.npz'
     log.info(f'Writing {blue}{norm_file.name}{reset}')
     np.savez(norm_file, **norm)
     log.info(f'Wrote {blue}{norm_file.name}{reset}')
