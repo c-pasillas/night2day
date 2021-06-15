@@ -6,6 +6,9 @@ import time
 import common
 from common import log, reset, blue, yellow, orange, bold
 
+IS_M_BANDS = True
+m_bands = ['M12', 'M13', 'M14', 'M15', 'M16']
+c_bands = [f'C{i:02d}' for i in range(7, 17)]
 bounds = {#'C01':
           #'C02':
           #'C03':
@@ -41,7 +44,7 @@ def normalize_band(arr, band):
 def band_norms(case):
     """Given a case with array data for each raw channel,
     produce a dictionary with each of the normalized channels."""
-    return dict(normalize_band(case[band], band) for band in bounds)
+    return dict(normalize_band(case[band], band) for band in (m_bands if IS_M_BANDS else c_bands))
 
 def btd_and_norm(arr1, arr2, band1, band2):
     """Given two channels (band name and array data for each),
@@ -59,9 +62,9 @@ def btd_and_norm(arr1, arr2, band1, band2):
 def all_btd_norms(case):
     """For several possible pairs of channels, compute the btd differences.
     Gather up all btd channels in a dictionary to return."""
-    c = ('M12', 'M13', 'M14', 'M15', 'M16')
+    c = m_bands if IS_M_BANDS else c_bands
     pairs = list(filter(lambda pair: pair[0] != pair[1], it.product(c, c)))
-    pairs_old = list(it.product(('M12', 'M13', 'M14'), ('M15', 'M16'))) + [('M15', 'M16')]
+    # pairs_old = list(it.product(('M12', 'M13', 'M14'), ('M15', 'M16'))) + [('M15', 'M16')]
     btds = [btd_and_norm(case[b1], case[b2], b1, b2) for b1, b2 in pairs]
     return {k: v for btd in btds for k, v in btd.items()}
 
@@ -108,10 +111,10 @@ def dnb_derive(dnb_arr):
     r = {'DNBfix': adj,
          'DNB_norm': formula(adj, DNB_bounds['night']),
          'DNB_full_moon_norm': formula(adj, DNB_bounds['full_moon']),
-         'DNB_new_moon_norm': formula(adj, DNB_bounds['new_moon']),
+         # 'DNB_new_moon_norm': formula(adj, DNB_bounds['new_moon']),
          'DNB_log_norm': formula(ladj, np.log10(DNB_bounds['night'])),
          'DNB_log_full_moon_norm': formula(ladj, np.log10(DNB_bounds['full_moon'])),
-         'DNB_log_new_moon_norm': formula(ladj, np.log10(DNB_bounds['new_moon'])),
+         # 'DNB_log_new_moon_norm': formula(ladj, np.log10(DNB_bounds['new_moon'])),
          'DNB_log_Miller_full_moon': formula(ladj, DNB_bounds['Miller_full_moon'])}
     return r
 
@@ -126,8 +129,7 @@ def normalize_case(case):
     log.info(f'Computing normalized {orange}DNB derivatives{reset}')
     dnb_norms = dnb_derive(case['DNB'])
     ch = list(case['channels']) + list(bandnorms) + list(btd_norms) + list(dnb_norms)
-    case['channels'] = ch
-    return {**case, **bandnorms, **btd_norms, **dnb_norms}
+    return {**bandnorms, **btd_norms, **dnb_norms, 'channels': ch}
 
 def show_stats(norm):
     for name, arr in norm.items():
@@ -142,6 +144,9 @@ def normalize(args):
     log.info(f'Loading {blue}{path.name}{reset}')
     with np.load(path) as f:
         case = dict(f)
+        if 'M12' not in f.files:
+            global IS_M_BANDS
+            IS_M_BANDS = False
     norm = normalize_case(case)
     show_stats(norm)
     norm_file = path.parent / (path.name[:-4] + '_normalized.npz')
