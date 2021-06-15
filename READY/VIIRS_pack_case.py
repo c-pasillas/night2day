@@ -15,10 +15,12 @@ from common import log, rgb, reset, blue, orange, bold
 all_channels = ['DNB', 'M12', 'M13', 'M14', 'M15', 'M16']
 lat_long_both = ['dnb_latitude', 'dnb_longitude', 'm_latitude', 'm_longitude']
 lat_long = ['latitude', 'longitude']
+SAVE_IMAGES = False
 
 def save_datasets(scene: Scene, tag, folder, save_nc=False):
-    scene.save_datasets(datasets=all_channels, base_dir=folder, writer='simple_image',
-                        filename=tag + '{start_time:%Y%m%d_%H%M%S}_{name}.png')
+    if SAVE_IMAGES:
+        scene.save_datasets(datasets=all_channels, base_dir=folder, writer='simple_image',
+                            filename=tag + '{start_time:%Y%m%d_%H%M%S}_{name}.png')
     if save_nc:
         scene.save_datasets(datasets=all_channels, base_dir=folder, writer='cf',
                             filename=tag + '{start_time:%Y%m%d_%H%M%S}_{name}.nc')
@@ -163,6 +165,9 @@ def pack_case(args):
     It also contains meta information like which channels are included and which h5 files
     went into making this case."""
     path = Path(args.h5_dir).resolve()
+    global SAVE_IMAGES
+    if args.save_images:
+        SAVE_IMAGES = True
     pairs, unpaired = grouped_h5s(path)
     if len(pairs) == 0:
         log.info(f"Error, couldn't find any .h5 files in {path}")

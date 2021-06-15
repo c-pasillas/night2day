@@ -73,6 +73,7 @@ msg = (f'Pack a case into a single array',
 VIIRS_pack_case_p = subparsers.add_parser('VIIRS-pack-case', help=msg[0], description=msg[1])
 VIIRS_pack_case_p.set_defaults(func=VIIRS_pack_case.pack_case)
 VIIRS_pack_case_p.add_argument('h5_dir', help='Path to directory with the .h5 files')
+VIIRS_pack_case_p.add_argument('--save-images', action='store_true', help='Should save image files')
 VIIRS_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
 
 aoi_p = subparsers.add_parser('aoi', help='Filter based of Area of Interest')
