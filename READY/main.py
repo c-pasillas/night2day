@@ -80,6 +80,7 @@ aoi_p = subparsers.add_parser('aoi', help='Filter based of Area of Interest')
 aoi_p.set_defaults(func=aoi.aoi)
 aoi_p.add_argument('npz_path', help='Path to npz file')
 aoi_p.add_argument('--patch', action='store_true', help='Cut images into patches before filtering')
+aoi_p.add_argument('--name', default='aoi_case.npz', help='Name of filtered .npz file output')
 aoi_p.add_argument('NSEW', type=int, nargs=4, help='NSEW bounding box')
 aoi_p.add_argument('-q', '--quiet', action='count', default=0)
 

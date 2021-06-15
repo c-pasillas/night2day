@@ -41,6 +41,7 @@ def all_patches(samples, x, y):
 
 def aoi(args):
     path = Path(args.npz_path).resolve()
+    out_name = args.name if '.npz' in args.name else args.name + '.npz'
     global NSEW
     NSEW = args.NSEW
     if NSEW[0] == NSEW[1] == NSEW[2] == NSEW[3] == 0:
@@ -53,7 +54,7 @@ def aoi(args):
 
     g = {c: np.stack([f[c][p] for p in aoi_patches]) for c in f['channels']}
     g['channels'] = f['channels']
-    out_path = path.parent / 'train_case.npz'
+    out_path = path.parent / out_name
     log.info(f'Writing {blue}{out_path.name}{reset}')
     np.savez(out_path, **g)
     log.info(f'Wrote {blue}{out_path.name}{reset}')
