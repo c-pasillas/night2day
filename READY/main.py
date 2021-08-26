@@ -6,6 +6,7 @@ import subprocess
 import logging
 import sqlite3
 import time
+import numpy as np
 
 import common
 from common import log, bold, reset, color, rgb
