@@ -78,14 +78,14 @@ except KeyError:
         machine = defcon['machine']
 print('machine =',machine)
 
-if machine == 'Hera':
+if machine == 'cuda1':
 
     # to avoid GPU out of memory error
     cp = tf.ConfigProto()
     cp.gpu_options.allow_growth = True
     session = tf.Session(config=cp)
 
-    spath = '/scratch1/RDARCH/rda-goesstf/conus2'  #KH on Hera
+    spath = sys.argv[2]  #KH on Hera
     verbose_fit = 2  #one progress bar per epoch
 
 ################################################################

@@ -52,42 +52,6 @@ def crop_nan_edges(scn: Scene):
     till = arrs[0].shape[-1] - back
     return {name: arr[:, front:till] for name, arr in zip(lat_long + all_channels, arrs)}
 
-def count_nan(array):
-    return np.sum(np.isnan(array))
-    
-def is_all_nan(array):
-    return all(np.isnan(array))
-
-def find_nan_row(array):
-    for i,row in enumerate(array):
-        if is_all_nan(row):
-            for j in range (i+1,len(array)):
-                if not is_all_nan(array[j]):
-                    return(i-1, j)
-    return(0,0)     
-    
-def fill_in_nan_row(array, start, stop):
-    a=(stop-start)//2
-    for i in range(start + 1, start + a):
-        array[i,:]=array[start,:]
-    for i in range(start + a, stop):
-        array[i,:]=array[stop,:]
-            
-def fill_in_nan_array(case, channels):
-    log.info(f'filling in nan arrays for {channels}')
-    for channel in channels:
-        log.info(f'filling in nan arrays for {channel}')
-        images = case[channel]   
-        for i,image in enumerate(images):
-            log.info(f'filling in image {i+1} / {len(images)}')
-            start,stop = find_nan_row(image)
-            if start != 0:
-                fill_in_nan_row(image, start,stop)
-        images[np.isnan(images)] = np.nanmean(images)
-    d=case['DNB']
-    d.clip(1e-11, out=d)
-    
-
 def process_pair(pair, image_dir: Path, curr_idx, len_pairs):
     """Pair is a list of two parsed filenames (see the function parse_filename below).
     Given these two files, use Scene to load the appropriate channels.
@@ -118,9 +82,8 @@ def process_pair(pair, image_dir: Path, curr_idx, len_pairs):
 
     data['channels'] = list(data)
     data['filenames'] = [f['filename'] for f in pair]
+    data["datetime"] = dt
     return data
-
-# TODO report NaN in the samples
 
 # File name: GDNBO-SVDNB_j01_d20200110_t1031192_e1036592_b*
 def parse_filename(path):
@@ -154,7 +117,6 @@ def ensure_image_dir(path):
     col.mkdir(exist_ok=True)
     return col
 
-# TODO make main entry to find unpaired samples
 # TODO version that takes path to folder directly
 #      then have this main command & control method call that
 def pack_case(args):
@@ -179,8 +141,11 @@ def pack_case(args):
     min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in datas])
     channels = datas[0]['channels']
     case = {c: np.stack(tuple(d[c][:min_rows, :min_cols] for d in datas)) for c in channels}
-    fill_in_nan_array(case, channels)
+    #fill_in_nan_array(case, channels)
     case['channels'] = channels
+    d=case['DNB']
+    d.clip(1e-11, out=d)
+    case['samples'] = [d["datetime"] for d in datas]
     filename = path / 'full_case.npz'
     log.info(f'Writing {blue}{filename.name}{reset}\n' +
              f'{orange}Channels{reset} {channels}\n{orange}')

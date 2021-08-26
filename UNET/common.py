@@ -80,7 +80,11 @@ def name_raw_h5_dir(path):
     p = pathlib.Path(path).resolve()
     if not p.is_dir():
         return
-    return p/'RAWDATA'
+    for c in p.iterdir():
+        if not c.is_dir() or c.name[:3].lower() != 'raw':
+            continue
+        if any(f.suffix == '.h5' for f in c.iterdir()):
+            return c
 
 db_name = 'night2day.db'
 def find_db_from_cwd():
@@ -110,6 +114,8 @@ def create_db(root_dir):
     h5_dir = name_raw_h5_dir(root_dir)
     if not h5_dir:
         h5_dir = name_raw_h5_dir(pathlib.Path(root_dir).resolve().parent)
+    if not h5_dir:
+        raise Exception(f'Expected {root_dir} to contain a subfolder named "raw" with .h5 files in it.')
     db = h5_dir.parent / db_name
     if db.exists():
         raise Exception(f'During creation, found existing db {db}')

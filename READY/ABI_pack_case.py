@@ -15,9 +15,11 @@ from common import log, rgb, reset, blue, orange, bold
 all_channels = ['DNB', 'M12', 'M13', 'M14', 'M15', 'M16']
 lat_long_both = ['dnb_latitude', 'dnb_longitude', 'm_latitude', 'm_longitude']
 lat_long = ['latitude', 'longitude']
+SAVE_IMAGES = False
 
 def save_datasets(scene: Scene, tag, folder, save_nc=False):
-    scene.save_datasets(datasets=all_channels, base_dir=folder, writer='simple_image',
+    if SAVE_IMAGES:
+        scene.save_datasets(datasets=all_channels, base_dir=folder, writer='simple_image',
                         filename=tag + '{start_time:%Y%m%d_%H%M%S}_{name}.png')
     if save_nc:
         scene.save_datasets(datasets=all_channels, base_dir=folder, writer='cf',
@@ -49,43 +51,7 @@ def crop_nan_edges(scn: Scene):
     front, back = ft.reduce(pairwise_max, edges)
     till = arrs[0].shape[-1] - back
     return {name: arr[:, front:till] for name, arr in zip(lat_long + all_channels, arrs)}
-
-def count_nan(array):
-    return np.sum(np.isnan(array))
-    
-def is_all_nan(array):
-    return all(np.isnan(array))
-
-def find_nan_row(array):
-    for i,row in enumerate(array):
-        if is_all_nan(row):
-            for j in range (i+1,len(array)):
-                if not is_all_nan(array[j]):
-                    return(i-1, j)
-    return(0,0)     
-    
-def fill_in_nan_row(array, start, stop):
-    a=(stop-start)//2
-    for i in range(start + 1, start + a):
-        array[i,:]=array[start,:]
-    for i in range(start + a, stop):
-        array[i,:]=array[stop,:]
-            
-def fill_in_nan_array(case, channels):
-    log.info(f'filling in nan arrays for {channels}')
-    for channel in channels:
-        log.info(f'filling in nan arrays for {channel}')
-        images = case[channel]   
-        for i,image in enumerate(images):
-            log.info(f'filling in image {i+1} / {len(images)}')
-            start,stop = find_nan_row(image)
-            if start != 0:
-                fill_in_nan_row(image, start,stop)
-        images[np.isnan(images)] = np.nanmean(images)
-    d=case['DNB']
-    d.clip(1e-11, out=d)
-    
-
+ 
 def process_pair(pair, out_path: Path, filename: Path):
     """Pair is a list of two parsed filenames (see the function parse_filename below).
     Given these two files, use Scene to load the appropriate channels.
@@ -116,8 +82,6 @@ def process_pair(pair, out_path: Path, filename: Path):
     data['filenames'] = [f['filename'] for f in pair]
     log.info(f'Saving {blue}{filename.name}{reset}')
     np.savez(filename, **data)
-
-# TODO report NaN in the samples
 
 def processed_file(pair, out_path: Path, curr_idx, len_pairs):
     """Given a pair of parsed filenames, compute the colocated and NaN cropped array data.
@@ -186,21 +150,21 @@ def pair_h5s_with_ncs(h5s, nc_dict):
         ret.append((h5, best))
     return ret
 
-
-# TODO make main entry to find unpaired samples
 # TODO version that takes path to folder directly
 #      then have this main command & control method call that
-def pack_case(h5_dir, nc_dir):
+def pack_case(args):
     """Scan for h5 files, pair them by datetime, colocate and save them separately,
     then gather all samples together, crop to the minimum size, and save the entire
     case worth of channel data to a file, case.npz.
     This file, case.npz, contains each of the channels as separate array data.
     It also contains meta information like which channels are included and which h5 files
     went into making this case."""
-    h5_dir, nc_dir = Path(h5_dir).resolve(), Path(nc_dir).resolve()
+    h5_dir, nc_dir = Path(args.h5_dir).resolve(), Path(args.nc_dir).resolve()
     h5s = gather_h5s(h5_dir)
     nc_dict = group_abi_by_time_sat(nc_dir)
-
+    global SAVE_IMAGES
+    if args.save_images:
+        SAVE_IMAGES = True
     """
     eleven_count = 0
     keys_in_order = sorted(nc_dict.keys())
@@ -237,19 +201,21 @@ def pack_case(h5_dir, nc_dir):
             print(f'{nc["filename"]}')
         print()
 
-    #files = [processed_file(pairs[datetime], col, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
-    #npzs = [np.load(f) for f in files]
-    #min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in npzs])
-    #channels = npzs[0]['channels']
-    #case = {c: np.stack(tuple(npz[c][:min_rows, :min_cols] for npz in npzs)) for c in channels}
-    #fill_in_nan_array(case, channels)
-    #case['channels'] = channels
-    #case['samples'] = [Path(f).stem for f in files]
-    #filename = db_path.parent / 'case.npz'
-    #log.info(f'Writing {blue}{filename.name}{reset}\n' +
-    #         f'{orange}Channels{reset} {channels}\n{orange}Samples{reset} {case["samples"]}')
-    #np.savez(filename, **case)
-    #for npz in npzs:
-    #    npz.close()
-    #log.info(f'Wrote {blue}{filename.name}{reset}')
+    files = [processed_file(pairs[datetime], col, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
+    npzs = [np.load(f) for f in files]
+    min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in npzs])
+    channels = npzs[0]['channels']
+    case = {c: np.stack(tuple(npz[c][:min_rows, :min_cols] for npz in npzs)) for c in channels}
+    d=case['DNB']
+    d.clip(1e-11, out=d)
+    case['channels'] = channels
+    
+    case['samples'] = [Path(f).stem for f in files]
+    filename = db_path.parent / 'case.npz'
+    log.info(f'Writing {blue}{filename.name}{reset}\n' +
+             f'{orange}Channels{reset} {channels}\n{orange}Samples{reset} {case["samples"]}')
+    np.savez(filename, **case)
+    for npz in npzs:
+        npz.close()
+    log.info(f'Wrote {blue}{filename.name}{reset}')
 

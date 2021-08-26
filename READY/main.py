@@ -35,8 +35,6 @@ def shell_setup():
 
 def status(args):
     log.info("here")
-def ABI_pack_case_cmd(args):
-    ABI_pack_case.pack_case(args.h5_dir, args.nc_dir)
 def learning_cmd(args):
     db_path = common.locate_db(None)
     learning_prep.learning_prep(db_path)
@@ -78,9 +76,10 @@ aoi_p.add_argument('NSEW', type=int, nargs=4, help='NSEW bounding box')
 aoi_p.add_argument('-q', '--quiet', action='count', default=0)
 
 ABI_pack_case_p = subparsers.add_parser('ABI-pack-case')
-ABI_pack_case_p.set_defaults(func=ABI_pack_case_cmd)
+ABI_pack_case_p.set_defaults(func=ABI_pack_case.pack_case)
 ABI_pack_case_p.add_argument('h5_dir')
 ABI_pack_case_p.add_argument('nc_dir')
+ABI_pack_case_p.add_argument('--save-images', action='store_true', help='Should save image files')
 ABI_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
 
 norm_p = subparsers.add_parser('normalize', help='Normalize and derive channels')
