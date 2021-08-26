@@ -49,7 +49,7 @@ def process_pair(pair, image_dir: Path, curr_idx, len_pairs):
     save_datasets(resample_scn, 'COLOCATED_', str(image_dir))
     log.debug(f'Saving images took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
 
-    data = crop_nan_edges(resample_scn)
+    data = crop.crop_nan_edges(resample_scn)
 
     data['channels'] = list(data)
     data['filenames'] = [f['filename'] for f in pair]
@@ -101,7 +101,7 @@ def pack_case(args):
         SAVE_IMAGES = True
     pairs, unpaired = grouped_h5s(path)
     if len(pairs) == 0:
-        log.info(f"Error, couldn't find any .h5 files in {path}")
+        log.info(f"Error, couldn't find any paired .h5 files in {path}")
         sys.exit(-1)
     if unpaired:
         log.info(f'{rgb(255,0,0)}Unpaired h5s{reset} {unpaired}')
