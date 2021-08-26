@@ -116,7 +116,9 @@ MLR_post.add_argument('nick', help='Name to create new folder structure')
 def flatten(lists):
     return [x for l in lists for x in l]
 def combine_cases(cases):
-    min_rows, min_cols = ft.reduce(crop.pairwise_min, [case['latitude'].shape for case in cases])
+    shapes = [case['latitude'].shape for case in cases]
+    log.info(f'shapes are {shapes}')
+    min_rows, min_cols = ft.reduce(crop.pairwise_min, shapes)
     arr_channels = cases[0]['channels']
     meta_channels = [ch for ch in cases[0].files if ch not in arr_channels]
     log.info(f'Packing cropped array data')
