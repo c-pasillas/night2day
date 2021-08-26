@@ -42,7 +42,5 @@ def crop_nan_edges(scn: Scene):
     #data = crop_nan_edges(resample_scn)
     #log.debug(f'Cropping nan edges took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
 
-def flatten(lists):
-    return [x for l in lists for x in l]
 
 

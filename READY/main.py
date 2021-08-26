@@ -7,6 +7,7 @@ import logging
 import sqlite3
 import time
 import numpy as np
+import functools as ft
 
 import common
 from common import log, bold, reset, color, rgb
@@ -112,6 +113,8 @@ MLR_post.add_argument('npz_path', help='Path to npz file')
 MLR_post.add_argument('model_path', help='Path to model .pickle file')
 MLR_post.add_argument('nick', help='Name to create new folder structure')
 
+def flatten(lists):
+    return [x for l in lists for x in l]
 def combine_cases(cases):
     min_rows, min_cols = ft.reduce(crop.pairwise_min, [case['latitude'].shape for case in cases])
     arr_channels = cases[0]['channels']
