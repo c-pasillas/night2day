@@ -18,6 +18,7 @@ import MLR_SKL
 import MLR_postprocess
 import scatter
 import aoi
+import crop
 
 def shell_setup():
     bin_dir = Path.home() / 'bin'
@@ -110,6 +111,27 @@ MLR_post.add_argument('npz_path', help='Path to npz file')
 MLR_post.add_argument('model_path', help='Path to model .pickle file')
 MLR_post.add_argument('nick', help='Name to create new folder structure')
 
+def combine_cases(cases):
+    min_rows, min_cols = ft.reduce(crop.pairwise_min, [case['latitude'].shape for case in cases])
+    arr_channels = cases[0]['channels']
+    meta_channels = [ch for ch in cases[0].files if ch not in arr_channels]
+    log.info(f'Packing cropped array data')
+    ubercase = {c: np.stack(tuple(case[c][:min_rows, :min_cols] for case in cases))
+                for c in arr_channels}
+    log.info(f'Packing meta data')
+    metas = {c: flatten([list(case[c]) for case in cases])
+             for c in meta_channels}
+    comb = {**ubercase, **metas}
+    return comb
+
+def combine_cmd(args):
+    output = combine_cases([np.load(p) for p in args.npz_path[1:]])
+    log.info(f'Writing {blue}{args.npz_path[0]}.npz{reset}')
+    np.savez(args.npz_path[0], **output)
+comb_p = subparsers.add_parser('combine-cases', help='combine multiple cases')
+comb_p.set_defaults(func=combine_cmd)
+comb_p.add_argument('-q', '--quiet', action='count', default=0)
+comb_p.add_argument('npz_path', nargs='+', help='First name of output, then npz files to combine')
 
 scatter_p = subparsers.add_parser('scatter', help='take final MLR/truth and make scatter plots')
 scatter_p.set_defaults(func=scatter_cmd)
