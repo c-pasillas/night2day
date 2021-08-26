@@ -21,6 +21,7 @@ import MLR_postprocess
 import scatter
 import aoi
 import crop
+import helpers
 
 def shell_setup():
     bin_dir = Path.home() / 'bin'
@@ -113,25 +114,8 @@ MLR_post.add_argument('npz_path', help='Path to npz file')
 MLR_post.add_argument('model_path', help='Path to model .pickle file')
 MLR_post.add_argument('nick', help='Name to create new folder structure')
 
-def flatten(lists):
-    return [x for l in lists for x in l]
-def combine_cases(cases):
-    shapes = [case['latitude'].shape[1:] for case in cases]
-    log.info(f'shapes are {shapes}')
-    min_rows, min_cols = ft.reduce(crop.pairwise_min, shapes)
-    arr_channels = cases[0]['channels']
-    meta_channels = [ch for ch in cases[0].files if ch not in arr_channels]
-    log.info(f'Packing cropped array data')
-    ubercase = {c: np.vstack(tuple(case[c][:, :min_rows, :min_cols] for case in cases))
-                for c in arr_channels}
-    log.info(f'Packing meta data')
-    metas = {c: flatten([list(case[c]) for case in cases])
-             for c in meta_channels}
-    comb = {**ubercase, **metas}
-    return comb
-
 def combine_cmd(args):
-    output = combine_cases([np.load(p) for p in args.npz_path[1:]])
+    output = helpers.combine_cases([np.load(p) for p in args.npz_path[1:]])
     log.info(f'Writing {blue}{args.npz_path[0]}.npz{reset}')
     np.savez(args.npz_path[0], **output)
 comb_p = subparsers.add_parser('combine-cases', help='combine multiple cases')
