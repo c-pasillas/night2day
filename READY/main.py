@@ -10,7 +10,7 @@ import numpy as np
 import functools as ft
 
 import common
-from common import log, bold, reset, color, rgb
+from common import log, bold, reset, color, rgb, blue
 import VIIRS_pack_case
 import ABI_pack_case
 import normalize
@@ -116,13 +116,13 @@ MLR_post.add_argument('nick', help='Name to create new folder structure')
 def flatten(lists):
     return [x for l in lists for x in l]
 def combine_cases(cases):
-    shapes = [case['latitude'].shape for case in cases]
+    shapes = [case['latitude'].shape[1:] for case in cases]
     log.info(f'shapes are {shapes}')
     min_rows, min_cols = ft.reduce(crop.pairwise_min, shapes)
     arr_channels = cases[0]['channels']
     meta_channels = [ch for ch in cases[0].files if ch not in arr_channels]
     log.info(f'Packing cropped array data')
-    ubercase = {c: np.stack(tuple(case[c][:min_rows, :min_cols] for case in cases))
+    ubercase = {c: np.vstack(tuple(case[c][:, :min_rows, :min_cols] for case in cases))
                 for c in arr_channels}
     log.info(f'Packing meta data')
     metas = {c: flatten([list(case[c]) for case in cases])
