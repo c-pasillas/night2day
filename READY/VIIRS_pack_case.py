@@ -114,7 +114,7 @@ def pack_case(args):
 
     d = case['DNB']
     d.clip(1e-11, out=d) # make erroneous sensor data non-negative
-    d.multiply(1e-4, out=d) # multiply by constant accounts for scaling factor in the Scene library
+    np.multiply(d, 1e-4, out=d) # multiply by constant accounts for scaling factor in the Scene library
 
     case['samples'] = [d["datetime"] for d in datas]
     filename = path / f'{path.name}_case.npz'
