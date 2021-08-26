@@ -103,10 +103,9 @@ def denormalize(channel_name, arr):
 
 def dnb_derive(dnb_arr):
     """Given the DNB original array data, compute the various derivative channels.
-    Multiplying by the constant 1e-4 accounts for a scaling factor applied in the Scene library
-    (the source of the array data). For each of several derivative variants, apply the
+    For each of several derivative variants, apply the
     DNB normalization formula to the adjusted array data, or the log of it, with appropriate constants."""
-    adj = dnb_arr * 1e-4
+    adj = dnb_arr
     ladj = np.log10(adj)
     r = {'DNBfix': adj,
          'DNB_norm': formula(adj, DNB_bounds['night']),

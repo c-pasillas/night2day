@@ -8,6 +8,7 @@ from collections import defaultdict
 from satpy import Scene
 import sys
 
+import crop
 import common
 from common import log, rgb, reset, blue, orange, bold
 
@@ -25,33 +26,6 @@ def save_datasets(scene: Scene, tag, folder, save_nc=False):
         scene.save_datasets(datasets=all_channels, base_dir=folder, writer='cf',
                             filename=tag + '{start_time:%Y%m%d_%H%M%S}_{name}.nc')
 
-def nan_count(row):
-    ct = sum(1 for _ in it.takewhile(np.isnan, row))
-    return ct if ct < len(row) / 2 else 0
-def pairwise_max(n, m):
-    return max(n[0], m[0]), max(n[1], m[1])
-def pairwise_min(n, m):
-    return min(n[0], m[0]), min(n[1], m[1])
-def nan_edges(rows):
-    """For each row, count the consecutive NaN blocks at the start and
-    the end of the row. Then aggregate the max NaN count across all rows."""
-    counts = ((nan_count(r), nan_count(r[::-1])) for r in rows)
-    return ft.reduce(pairwise_max, counts)
-def arrays_and_edges(scn: Scene):
-    """Given a colocated scene, gather longitude and latitude arrays and
-    sensor arrays. And return the maximum NaN edges found in each channel."""
-    ae = [(arr, nan_edges(arr)) for arr in (scn[c].values for c in all_channels)]
-    arrs = [scn[c].values for c in lat_long_both[:2]] + [a[0] for a in ae]
-    return arrs, [a[1] for a in ae]
-def crop_nan_edges(scn: Scene):
-    """Using the maximum NaN edges found across all sensor channels,
-    crop all channels to eliminate NaN edges. Return a dict mapping the
-    channel names to the numpy arrays."""
-    arrs, edges = arrays_and_edges(scn)
-    front, back = ft.reduce(pairwise_max, edges)
-    till = arrs[0].shape[-1] - back
-    return {name: arr[:, front:till] for name, arr in zip(lat_long + all_channels, arrs)}
-
 def process_pair(pair, image_dir: Path, curr_idx, len_pairs):
     """Pair is a list of two parsed filenames (see the function parse_filename below).
     Given these two files, use Scene to load the appropriate channels.
@@ -65,7 +39,7 @@ def process_pair(pair, image_dir: Path, curr_idx, len_pairs):
     log.info(f'Colocating {blue}{dt}{reset}')
     scn = Scene(reader='viirs_sdr', filenames=[f['path'] for f in pair])
     scn.load(all_channels + lat_long_both)
-    save_datasets(scn, 'ORIGINAL_', str(image_dir))
+    #save_datasets(scn, 'ORIGINAL_', str(image_dir))
 
     log.info(f'Resampling {blue}{dt}{reset}')
     resample_scn = scn.resample(scn['DNB'].attrs['area'], resampler='nearest')
@@ -75,10 +49,7 @@ def process_pair(pair, image_dir: Path, curr_idx, len_pairs):
     save_datasets(resample_scn, 'COLOCATED_', str(image_dir))
     log.debug(f'Saving images took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
 
-    log.info(f'Cropping nan edges of {blue}{dt}{reset}')
-    t = time.time()
     data = crop_nan_edges(resample_scn)
-    log.debug(f'Cropping nan edges took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
 
     data['channels'] = list(data)
     data['filenames'] = [f['filename'] for f in pair]
@@ -117,8 +88,6 @@ def ensure_image_dir(path):
     col.mkdir(exist_ok=True)
     return col
 
-# TODO version that takes path to folder directly
-#      then have this main command & control method call that
 def pack_case(args):
     """Scan for h5 files, pair them by datetime, colocate and save them separately,
     then gather all samples together, crop to the minimum size, and save the entire
@@ -138,15 +107,17 @@ def pack_case(args):
         log.info(f'{rgb(255,0,0)}Unpaired h5s{reset} {unpaired}')
     image_dir = ensure_image_dir(path)
     datas = [process_pair(pairs[datetime], image_dir, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
-    min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in datas])
+    min_rows, min_cols = ft.reduce(crop.pairwise_min, [x['DNB'].shape for x in datas])
     channels = datas[0]['channels']
     case = {c: np.stack(tuple(d[c][:min_rows, :min_cols] for d in datas)) for c in channels}
-    #fill_in_nan_array(case, channels)
     case['channels'] = channels
-    d=case['DNB']
-    d.clip(1e-11, out=d)
+
+    d = case['DNB']
+    d.clip(1e-11, out=d) # make erroneous sensor data non-negative
+    d.multiply(1e-4, out=d) # multiply by constant accounts for scaling factor in the Scene library
+
     case['samples'] = [d["datetime"] for d in datas]
-    filename = path / 'full_case.npz'
+    filename = path / f'{path.name}_case.npz'
     log.info(f'Writing {blue}{filename.name}{reset}\n' +
              f'{orange}Channels{reset} {channels}\n{orange}')
     np.savez(filename, **case)
