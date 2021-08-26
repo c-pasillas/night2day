@@ -49,7 +49,10 @@ def process_pair(pair, image_dir: Path, curr_idx, len_pairs):
     save_datasets(resample_scn, 'COLOCATED_', str(image_dir))
     log.debug(f'Saving images took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
 
+    log.info(f'Cropping nan edges of {blue}{dt}{reset}')
+    t = time.time()
     data = crop.crop_nan_edges(resample_scn)
+    log.debug(f'Cropping nan edges took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
 
     data['channels'] = list(data)
     data['filenames'] = [f['filename'] for f in pair]
