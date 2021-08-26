@@ -1,6 +1,7 @@
 import numpy as np
 import itertools as it
 import functools as ft
+from satpy import Scene
 
 def nan_count(row):
     ct = sum(1 for _ in it.takewhile(np.isnan, row))
