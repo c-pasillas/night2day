@@ -84,7 +84,7 @@ def grouped_h5s(h5_dir):
     return group_by_datetime(h5s)
 
 def ensure_image_dir(path):
-    col = path.parent / 'IMAGES'
+    col = path / 'IMAGES'
     col.mkdir(exist_ok=True)
     return col
 
@@ -96,6 +96,7 @@ def pack_case(args):
     It also contains meta information like which channels are included and which h5 files
     went into making this case."""
     path = Path(args.h5_dir).resolve()
+    log.info(f'h5_dir path is {path}')
     global SAVE_IMAGES
     if args.save_images:
         SAVE_IMAGES = True
@@ -106,6 +107,8 @@ def pack_case(args):
     if unpaired:
         log.info(f'{rgb(255,0,0)}Unpaired h5s{reset} {unpaired}')
     image_dir = ensure_image_dir(path)
+    log.info(f'image_dir is {image_dir}')
+
     datas = [process_pair(pairs[datetime], image_dir, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
     min_rows, min_cols = ft.reduce(crop.pairwise_min, [x['DNB'].shape for x in datas])
     channels = datas[0]['channels']

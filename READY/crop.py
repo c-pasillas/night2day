@@ -39,11 +39,17 @@ def crop_nan_edges(scn: Scene):
     #data = crop_nan_edges(resample_scn)
     #log.debug(f'Cropping nan edges took {rgb(255,0,0)}{time.time() - t:.2f}{reset} seconds')
 
+def flatten(lists):
+    return [x for l in lists for x in l]
+
 def combine_cases(cases):
     min_rows, min_cols = ft.reduce(pairwise_min, [case['latitude'].shape for case in cases])
     arr_channels = cases[0]['channels']
     meta_channels = [ch for ch in cases[0].files if ch not in arr_channels]
     ubercase = {c: np.stack(tuple(case[c][:min_rows, :min_cols] for case in cases))
                 for c in arr_channels}
-    #metas = {c: (case[c] for case in cases)
-    #         for c in meta_channels}
+    metas = {c: flatten([list(case[c]) for case in cases])
+             for c in meta_channels}
+    comb = {**ubercase, **metas}
+    return comb
+
