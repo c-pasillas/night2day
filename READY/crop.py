@@ -3,6 +3,10 @@ import itertools as it
 import functools as ft
 from satpy import Scene
 
+all_channels = ['DNB', 'M12', 'M13', 'M14', 'M15', 'M16']
+lat_long_both = ['dnb_latitude', 'dnb_longitude', 'm_latitude', 'm_longitude']
+lat_long = ['latitude', 'longitude']
+
 def nan_count(row):
     ct = sum(1 for _ in it.takewhile(np.isnan, row))
     return ct if ct < len(row) / 2 else 0
