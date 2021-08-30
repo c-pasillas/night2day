@@ -24,7 +24,7 @@ def patch_case(case, patch_size=256):
     shape = case['latitude'].shape
     a_patches = all_patches(shape[0], shape[1], shape[2], patch_size)
     arr_channels = case['channels']
-    meta_channels = [ch for ch in cases.files if ch not in arr_channels]
+    meta_channels = [ch for ch in case.files if ch not in arr_channels]
     log.info(f'Patching channels: {channels}')
     arr_data = {c: np.stack([case[c][p] for p in a_patches], axis=-1)
                 for c in arr_channels}
