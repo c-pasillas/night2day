@@ -114,6 +114,7 @@ MLR_post.add_argument('model_path', help='Path to model .pickle file')
 MLR_post.add_argument('nick', help='Name to create new folder structure')
 
 def combine_cmd(args):
+    log.info(f'Starting combine cases')
     output = helpers.combine_cases([np.load(p) for p in args.npz_path[1:]])
     log.info(f'Writing {blue}{args.npz_path[0]}.npz{reset}')
     np.savez(args.npz_path[0], **output)

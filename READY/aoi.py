@@ -36,7 +36,7 @@ def aoi(args):
     aoi_patches = filter_patches(a_patches, f['latitude'], f['longitude'])
     log.info(f'Kept patches: {len(aoi_patches)} / {len(a_patches)}')
 
-    channels_to_filter = list(f['channels']) + ["samples", "patches"]
+    channels_to_filter = list(f['channels']) # + corresponding meta data channels [samples, patches]
     g = {c: np.stack([f[c][p] for p in aoi_patches]) for c in channels_to_filter}
     g['channels'] = f['channels']
     out_path = path.parent / out_name
