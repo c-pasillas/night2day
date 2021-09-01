@@ -67,7 +67,7 @@ def patch_case(case, patch_size=256):
     
     #arr_data = {c: np.stack([case[c][p] for p in a_patches], axis=-1)
     #           for c in arr_channels}
-    
+
     metas = {c: case[c] for c in meta_channels}
     patch_samples = [case['samples'][p[0]] for p in a_patches]
     metas['samples'] = patch_samples
