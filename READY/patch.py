@@ -20,13 +20,19 @@ def all_patches(samples, x, y, patch_size):
     DNB[p] where p is a patch identifier."""
     return list(it.product(range(samples), slices(x, patch_size), slices(y, patch_size)))
 
+def index(arr, patch):
+    i, rows, cols = patch
+    return arr[i, rows.start:rows.stop, cols.start:cols.stop]
+
 def patch_case(case, patch_size=256):
     shape = case['latitude'].shape
     a_patches = all_patches(shape[0], shape[1], shape[2], patch_size)
     arr_channels = case['channels']
     meta_channels = [ch for ch in case.files if ch not in arr_channels]
     log.info(f'Patching channels: {arr_channels}')
-    arr_data = {c: np.stack([case[c][p] for p in a_patches], axis=-1)
+    #arr_data = {c: np.stack([case[c][p] for p in a_patches], axis=-1)
+    #            for c in arr_channels}
+    arr_data = {c: np.stack([index(case[c], p) for p in a_patches], axis=-1)
                 for c in arr_channels}
     metas = {c: case[c] for c in meta_channels}
     patch_samples = [case['samples'][p[0]] for p in a_patches]
