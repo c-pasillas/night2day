@@ -20,14 +20,54 @@ def all_patches(samples, x, y, patch_size):
     DNB[p] where p is a patch identifier."""
     return list(it.product(range(samples), slices(x, patch_size), slices(y, patch_size)))
 
+def as_array(patches):
+    """Given patch identifiers, convert each to a tuple of 5 numbers, so
+    that they can be stored in a numpy array and saved for later."""
+    return np.array([(sample, x.start, x.stop, y.start, y.stop) for sample, x, y in patches])
+
+def mypatch(case, patchdims=256):
+    shape = case['latitude'].shape
+    channels = case['channels'] 
+    varnum = len(channels)#number of variables
+    num_samples = shape[0]
+    rows = int(shape[1]/patchdims)
+    columns = int(shape[2]/patchdims)
+    print(f'I am in mypatch and this is the case info: original case size is {shape}, I have {num_samples} samples that are {rows} rows, {columns} columns, and size {patchdims},the number of variables is {varnum}'  )
+    PATCHED = np.zeros(((num_samples*rows*columns),patchdims,patchdims,varnum))
+    NEWARRAY = np.zeros((shape[0],shape[1],shape[2],varnum))
+    
+    for i in range (varnum):
+        NEWARRAY[:,:,:,i] = case[channels[i]]
+    patch_id = []
+    whichpatch=0 #which patch we are at
+    for i in range(num_samples):
+        for ii in range(rows): 
+            for jj in range(columns):
+                i_start = ii*patchdims
+                j_start = jj*patchdims
+                PATCHED[whichpatch,:,:,:] = NEWARRAY[i,i_start:i_start+patchdims,j_start:j_start+patchdims,:]  
+                ID = f'{case["samples"][i]}_{i_start}_{j_start}_{patchdims}'
+                patch_id.append(ID)
+                whichpatch=whichpatch+1
+                print('ID is', ID)
+        print(f'i am done patching the {i+1} sample')
+    array_data = {"PATCH_ID": patch_id}
+    for i in range (varnum):
+        array_data[channels[i]] = PATCHED[:,:,:,i]     
+    
+    return array_data
+    
 def patch_case(case, patch_size=256):
     shape = case['latitude'].shape
     a_patches = all_patches(shape[0], shape[1], shape[2], patch_size)
     arr_channels = case['channels']
     meta_channels = [ch for ch in case.files if ch not in arr_channels]
     log.info(f'Patching channels: {arr_channels}')
-    arr_data = {c: np.stack([case[c][p] for p in a_patches], axis=-1)
-                for c in arr_channels}
+    arr_data = mypatch(case, patch_size)
+    
+    #arr_data = {c: np.stack([case[c][p] for p in a_patches], axis=-1)
+    #           for c in arr_channels}
+    
     metas = {c: case[c] for c in meta_channels}
     patch_samples = [case['samples'][p[0]] for p in a_patches]
     metas['samples'] = patch_samples
@@ -35,4 +75,8 @@ def patch_case(case, patch_size=256):
     return new_case
 
 def patch(args):
-    pass
+    case = np.load(args.npz_path)
+    patched = patch_case(case, args.PATCHSIZE)
+    savepath = args.npz_path[:-4]+ "_PATCHED.npz"
+    np.savez(savepath,**patched )
+    

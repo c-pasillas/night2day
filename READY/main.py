@@ -22,6 +22,9 @@ import scatter
 import aoi
 import crop
 import helpers
+import patch
+import NAN
+import NANnearest
 
 def shell_setup():
     bin_dir = Path.home() / 'bin'
@@ -77,6 +80,23 @@ aoi_p.add_argument('npz_path', help='Path to npz file')
 aoi_p.add_argument('--name', default='aoi_case.npz', help='Name of filtered .npz file output')
 aoi_p.add_argument('NSEW', type=int, nargs=4, help='NSEW bounding box')
 aoi_p.add_argument('-q', '--quiet', action='count', default=0)
+
+patch_p = subparsers.add_parser('patch', help='Cut into smaller patches')
+patch_p.set_defaults(func=patch.patch)
+patch_p.add_argument('npz_path', help='Path to npz file')
+patch_p.add_argument('--PATCHSIZE', default= 256, type=int, help='desired patchsize')
+patch_p.add_argument('-q', '--quiet', action='count', default=0)
+
+NAN_p = subparsers.add_parser('NAN', help='Remove all patches with ANY NANs')
+NAN_p.set_defaults(func=NAN.NAN)
+NAN_p.add_argument('npz_path', help='Path to npz file')
+NAN_p.add_argument('-q', '--quiet', action='count', default=0)
+
+NANnearest_p = subparsers.add_parser('NANnearest', help='Replace NANs with nearest vertical value')
+NANnearest_p.set_defaults(func=NANnearest.NANnearest)
+NANnearest_p.add_argument('npz_path', help='Path to npz file')
+NANnearest_p.add_argument('-q', '--quiet', action='count', default=0)nearest
+
 
 ABI_pack_case_p = subparsers.add_parser('ABI-pack-case')
 ABI_pack_case_p.set_defaults(func=ABI_pack_case.pack_case)
