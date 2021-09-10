@@ -91,6 +91,12 @@ def ensure_image_dir(path):
     col.mkdir(exist_ok=True)
     return col
 
+def unpaired_print(unpaired):
+    for dt, h5_list in unpaired.items():
+        print(dt)
+        for h5 in h5_list:
+            print(f'  {h5["filename"]}')
+    
 def pack_case(args):
     """Scan for h5 files, pair them by datetime, colocate and save them separately,
     then gather all samples together, crop to the minimum size, and save the entire
@@ -104,11 +110,12 @@ def pack_case(args):
     if args.save_images:
         SAVE_IMAGES = True
     pairs, unpaired = grouped_h5s(path)
+    if unpaired:
+        log.info(f'{rgb(255,0,0)}Unpaired h5s{reset}')
+        unpaired_print(unpaired)
     if len(pairs) == 0:
         log.info(f"Error, couldn't find any paired .h5 files in {path}")
         sys.exit(-1)
-    if unpaired:
-        log.info(f'{rgb(255,0,0)}Unpaired h5s{reset} {unpaired}')
     image_dir = ensure_image_dir(path)
     log.info(f'image_dir is {image_dir}')
 

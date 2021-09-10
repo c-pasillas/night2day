@@ -71,5 +71,5 @@ def NAN(args):
     print("I loaded the case")
     nan_nearest = remove_nans(case)
     print("I am now saving case")
-    savepath = args.npz_path.strip(".npz")+ "_nearestNAN.npz"
+    savepath = args.npz_path[:-4]+ "_nearestNAN.npz"
     np.savez(savepath,**nana_nearest )

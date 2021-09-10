@@ -75,11 +75,11 @@ DNB_bounds = {'night': [2e-10, 3e-7],
 
 DNB_consts = {
      'DNB_norm': DNB_bounds['night'],
-     'DNB_full_moon_norm': DNB_bounds['full_moon'],
-     'DNB_new_moon_norm': DNB_bounds['new_moon'],
+     'DNB_FMN': DNB_bounds['full_moon'],
+     'DNB_NMN': DNB_bounds['new_moon'],
      'DNB_log_norm': np.log10(DNB_bounds['night']),
-     'DNB_log_full_moon_norm': np.log10(DNB_bounds['full_moon']),
-     'DNB_log_new_moon_norm': np.log10(DNB_bounds['new_moon']),
+     'DNB_log_FMN': np.log10(DNB_bounds['full_moon']),
+     'DNB_log_NMN': np.log10(DNB_bounds['new_moon']),
      'DNB_log_Miller_full_moon': DNB_bounds['Miller_full_moon']
 }
 
@@ -109,11 +109,11 @@ def dnb_derive(dnb_arr):
     ladj = np.log10(adj)
     r = {'DNBfix': adj,
          'DNB_norm': formula(adj, DNB_bounds['night']),
-         'DNB_full_moon_norm': formula(adj, DNB_bounds['full_moon']),
-         # 'DNB_new_moon_norm': formula(adj, DNB_bounds['new_moon']),
+         'DNB_FMN': formula(adj, DNB_bounds['full_moon']),
+         # 'DNB_NMN: formula(adj, DNB_bounds['new_moon']),
          'DNB_log_norm': formula(ladj, np.log10(DNB_bounds['night'])),
-         'DNB_log_full_moon_norm': formula(ladj, np.log10(DNB_bounds['full_moon'])),
-         # 'DNB_log_new_moon_norm': formula(ladj, np.log10(DNB_bounds['new_moon'])),
+         'DNB_log_FMN': formula(ladj, np.log10(DNB_bounds['full_moon'])),
+         # 'DNB_log_NMN': formula(ladj, np.log10(DNB_bounds['new_moon'])),
          'DNB_log_Miller_full_moon': formula(ladj, DNB_bounds['Miller_full_moon'])}
     return r
 

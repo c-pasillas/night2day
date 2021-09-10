@@ -6,6 +6,9 @@ import time
 import common
 from common import log, reset, blue, yellow, orange, bold
 
+
+#currently does all Mband paris ( but not the reverese). eventually would like to give it what pairs we care only.
+
 m_bands = ['M12', 'M13', 'M14', 'M15', 'M16']
 bounds = {'M12': [230, 353],
           'M13': [230, 634],
@@ -24,7 +27,7 @@ def btd_and_norm(arr1, arr2, band1, band2):
     ret = (mx - arr) / (mx - mn)
     ret.clip(max=1, out=ret)
     name = 'BTD' + band1[1:] + band2[1:]
-    return {name: arr, name + 'norm': ret}
+    return {name + 'norm': ret} #only returning BTD norms ( no need to keep the BTD regulars)
 
 def all_btd_norms(case, channels=None):
     """For several possible pairs of channels, compute the btd differences.
@@ -39,3 +42,10 @@ def all_btd_norms(case, channels=None):
     new_case = {**case, **btd_norms, 'channels': chans}
     return new_case
 
+def btd(args):
+    case = np.load(args.npz_path)
+    print("I loaded the case")
+    BTDed = all_btd_norms(case)
+    print("I am now saving case")
+    savepath = args.npz_path[:-4]+ "_BTD.npz"
+    np.savez(savepath,**BTDed)

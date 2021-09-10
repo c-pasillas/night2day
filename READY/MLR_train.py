@@ -57,11 +57,11 @@ predict_channels = ['M12norm','M13norm','M14norm','M15norm','M16norm','BTD1215no
 'BTD1316norm','BTD1415norm','BTD1416norm','BTD1516norm'] #EDIT THE EXTRA CHANNELS HERE BEFORE CAN RERUN
 
 #predictand_channels = [ 'DNB_log_Miller_full_moon']
-#predictand_channels = ['DNB_log_norm']#,'DNB_log_full_moon_norm', 'DNB_log_new_moon_norm','DNB_log_Miller_full_moon']
+#predictand_channels = ['DNB_log_norm']#,'DNB_log_FMN', 'DNB_log_NMN','DNB_log_Miller_full_moon']
 
-#predictand_channels = ['DNB_norm', 'DNB_full_moon_norm', 'DNB_new_moon_norm', 'DNB_log_norm','DNB_log_full_moon_norm', 'DNB_log_new_moon_norm','DNB_log_Miller_full_moon']
-predictand_channels = ['DNB_norm', 'DNB_full_moon_norm',
-                       'DNB_log_norm', 'DNB_log_full_moon_norm', 'DNB_log_Miller_full_moon']
+#predictand_channels = ['DNB_norm', 'DNB_FMN', 'DNB_NMN', 'DNB_log_norm','DNB_log_FMN', 'DNB_log_NMN','DNB_log_Miller_full_moon']
+predictand_channels = ['DNB_norm', 'DNB_FMN',
+                       'DNB_log_norm', 'DNB_log_FMN', 'DNB_log_Miller_full_moon']
 
 #%%
 #helper function for plotting histogram and PDFs

@@ -49,7 +49,7 @@ def mypatch(case, patchdims=256):
                 ID = f'{case["samples"][i]}_{i_start}_{j_start}_{patchdims}'
                 patch_id.append(ID)
                 whichpatch=whichpatch+1
-                print('ID is', ID)
+                #print('ID is', ID)
         print(f'i am done patching the {i+1} sample')
     array_data = {"PATCH_ID": patch_id}
     for i in range (varnum):
