@@ -114,7 +114,7 @@ def cloudfree(truths):
 #helper functions for  COLE drawing
 def show_byte_img(arr, name='temp.png', **args):
     clip_lo, clip_hi = np.array([np.sum(arr < 0), np.sum(arr > 256)]) * 100 / arr.size
-    print(f'clipping low/high: {clip_lo:.1f}% {clip_hi:.1f}%')
+    #print(f'clipping low/high: {clip_lo:.1f}% {clip_hi:.1f}%')
     b = arr.clip(min=0, max=255).astype('uint8')
     Image.fromarray(b).save(name)
     #dis.display(dis.Image(name, **args))
@@ -130,7 +130,7 @@ def scale(arr, percent_tail=2, percent_top=None, invert=False):
     normi = norm * (1 if not invert else -1)
     sort_arr = np.sort(normi.flatten())
     left, right = int(sort_arr.size * left / 100), int(sort_arr.size * right / 100)
-    print(f'left={left} right={right}')
+    #print(f'left={left} right={right}')
     lo, hi = sort_arr[left], sort_arr[-(1 + right)]
     byte_scale = 256 / (hi - lo)
     offset = 0 - lo * byte_scale
@@ -154,8 +154,9 @@ def draw_COLE(data_dic, name):
             image_array = data_dic[label][i]
             p = imagedir / f'{name}_{label}_{i}.png'
             if label == "DNBdiff" or label == "DNB_normdiff":
-                # plt.colorbar()
-                plt.imsave(str(p), image_array, cmap = "seismic", vmin = -0.4, vmax = 0.4)  
+                plt.colorbar()
+                #plt.imsave(str(p), image_array, cmap = "seismic", vmin = -0.4, vmax = 0.4)  
+                plt.imshow(str(p), image_array, cmap = "seismic", vmin = -0.4, vmax = 0.4)  
             else:
                 show_byte_img(scale(image_array), name = str(p))
 
@@ -170,8 +171,13 @@ def hex (x,y):
     plt.legend()
     plt.title('truth DNB vs ML DNB for Full Moon Norm Radiances')
     plt.colorbar()
-    plt.show()
+    #plt.show()
 
+    plt.plot(x, y)
+fig = plt.gcf()
+fig.savefig('fig1.pdf')
+    
+    
 
 # #density scatter plot for larger datsets
 def density_scatter( x , y, ax = None, sort = True, bins = 1000, **kwargs )   :
@@ -226,10 +232,10 @@ def ERF(array1, array2):
     y=ERFimage_ML#[:2000]
     print(x.shape, y.shape)
     
-    #do i need to reshape? 
     #calculate basic relations for ERF values
     xy_relations(x.flatten(),y.flatten())
     
+    plotit(x,y)
     # plotting one image
 
     #img = x[0]
@@ -243,53 +249,51 @@ def ERF(array1, array2):
     #plt.title("ERF imagery ML")
     #plt.colorbar()
     #plt.show()
-    #%%
+#     %%
 
-    #plot all images?
-    #def plotit():
-    # for i in range(len(x)):
-    #     x=ERFimage_truth[i]
-    #     y=ERFimage_ML[i]
-    #     a=np.linspace(0,4000,100)
-    #     b=a
-    #     #plt.plot(x,y)
-    #     #plt.show()
-    #     #print ('This is the end of Truth plot using paper full moon max/min')
+def plotit():
+    for i in range(len(x)):
+        x=ERFimage_truth[i]
+        y=ERFimage_ML[i]
+        a=np.linspace(0,4000,100)
+        b=a
+        #plt.plot(x,y)
+        #plt.show()
+        #print ('This is the end of Truth plot using paper full moon max/min')
 
-    #     plt.figure()
-    #     plt.plot(x,y,'o', markersize =1, color='black')
-    #     plt.xlabel('Truth')
-    #     plt.ylabel('ML_predicted')
-    #     plt.plot(a,b, 'r--', label='perfect')
-    #     plt.legend()
-    #     plt.title('DNB Truth vs ML DNB ERF scaled BVIs' )
-    #     #plt.show()
-    #     log.info(f'saving comparison plot {i}')
-    #     plt.savefig(f"comparison_at_{i}.png") 
-    #     plt.clf()
-    #     plt.close()
-    #     log.info(f'done saving comparison plot {i}')
+        plt.figure()
+        plt.plot(x,y,'o', markersize =1, color='black')
+        plt.xlabel('Truth')
+        plt.ylabel('ML_predicted')
+        plt.plot(a,b, 'r--', label='perfect')
+        plt.legend()
+        plt.title('DNB Truth vs ML DNB ERF scaled BVIs' )
+        #plt.show()
+        log.info(f'saving comparison plot {i}')
+        plt.savefig(f"comparison_at_{i}.png") 
+        plt.clf()
+        plt.close()
+        log.info(f'done saving comparison plot {i}')
 
-    #     img = x
-    #     imgplot = plt.imshow(img, cmap='gray', vmin =1000, vmax=5000)
+        img = x
+        imgplot = plt.imshow(img, cmap='gray', vmin =1000, vmax=5000)
 
-    #     plt.title('ERF imagery truth')
-    #     plt.colorbar()
-    #     #plt.show()
-    #     plt.savefig(f"ERF_truth_at_{i}.png") 
-    #     plt.clf()
-    #     plt.close()
-
+        plt.title('ERF imagery truth')
+        plt.colorbar()
+        #plt.show()
+        plt.savefig(f"1050ERF_truth_at_{i}.png") 
+        plt.clf()
+        plt.close()
 
 
-    #     img2 = y
-    #     imgplot= plt.imshow(img2, cmap='gray', vmin=1500, vmax=5000)
-    #     plt.title("ERF imagery ML")
-    #     plt.colorbar()
-    #     #plt.show()
-    #     plt.savefig(f"1550ERF_ML_at_{i}.png") 
-    #     plt.clf()
-    #     plt.close()
+        img2 = y
+        imgplot= plt.imshow(img2, cmap='gray', vmin=1500, vmax=5000)
+        plt.title("ERF imagery ML")
+        plt.colorbar()
+        #plt.show()
+        plt.savefig(f"1550ERF_ML_at_{i}.png") 
+        plt.clf()
+        plt.close()
 
                 
 

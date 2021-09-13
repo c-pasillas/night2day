@@ -47,9 +47,15 @@ def run_stats(data_dic, name):
     ph.xy_relations(data_dic["DNB_FMN"],data_dic["normML"])
     print("starting xy relations for radiances")
     ph.xy_relations(data_dic["x"],data_dic["y"])
-    #print("draw cole")
-    #ph.draw_COLE(data_dic, name)
-    #scatter/densityplot DNB vs ML_DNB and save in folder with ML truths
+    print("draw cole")
+    ph.draw_COLE(data_dic, name)
+    print("making hexplot")
+    ph.hex(data_dic["x"],data_dic["y"])
+    #print('making density scatter plot")
+    #ph.density_scatter( data_dic['x'],  data_dic['y'], bins = [30,30] )
+    #print("making ERF plats and calcs")
+    ph.ERF(data_dic["x"],data_dic["y"])
+
 
 #############
 def assessment(args):

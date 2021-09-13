@@ -31,6 +31,13 @@ def Mband_norms(case):
     new_case = {**case, **norms, 'channels': chans}
     return new_case
 
+
+def mband_case (case):
+    Mband_norms(case)
+    return new_case
+    
+
+
 def mband(args):
     case = np.load(args.npz_path)
     print("I loaded the case")

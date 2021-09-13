@@ -42,6 +42,12 @@ def all_btd_norms(case, channels=None):
     new_case = {**case, **btd_norms, 'channels': chans}
     return new_case
 
+def btd_case (case):
+    all_btd_norms(case)
+    return new_case
+    
+    
+
 def btd(args):
     case = np.load(args.npz_path)
     print("I loaded the case")

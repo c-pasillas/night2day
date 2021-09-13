@@ -14,10 +14,10 @@ def prep(args):
     print("I loaded the case")
     case = np.load(args.npz_path)
     print ("Starting BTD calcs")
-    case = VIIRS_btd.btd(case)
+    case = VIIRS_btd.btd_case(case)
     print("starting Mband Norm")
-    case = Mband_norm.mband(case)
+    case = Mband_norm.mband_case(case)
     print("starting DNB norm")
-    case = DNB_norm.DNBnorm (case)
+    case = DNB_norm.DNBnorm_case (case)
     savepath = args.npz_path[:-4]+ "_FINAL_FULL.npz"
     np.savez(savepath,**case)
