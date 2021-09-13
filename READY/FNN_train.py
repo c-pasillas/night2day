@@ -43,7 +43,7 @@ def set_up(case, predictors, predictand):
 def create_model(n_input): ####options
     #number of inputs ( decided before here)
     #activation functions ('relu', 'sigmoid', 'tanh')
-    #lossfxn # can be mse or mae or a specilaize function, MSE better for our problem
+    #lossfxn # can be mse or mae or a specialize function, MSE better for our problem
 
     # number of hidden layers
 
@@ -61,8 +61,6 @@ def create_model(n_input): ####options
     model.compile(optimizer=keras.optimizers.Adam(0.01),  # Adam optimizer
                 loss= 'mse',       # mean squared error
                metrics=['mae','mse'])  # mean absolute error
-
-    #heres the model 
     return model
 
 def FNN_train(args):
@@ -79,7 +77,7 @@ def FNN_train(args):
     #history = model.fit(x, y, validation_split=0.30, epochs=n_epochs, batch_size=128)
     # number of epochs to train 
     n_epochs = 2
-    #batch size, # patches before updates smaller finer resolution/ > time may get in a minumum, larger < time may miss over a minimum
+    #batch size, # patches before update small=finer resolution/> time may get in a minumum, large < time may jump a minimum
     bs = 1000
     history = model.fit(TORS_train, TAND_train,validation_data =(TORS_test,TAND_test), epochs=n_epochs, batch_size=bs)   
     print("I am now saving the model")

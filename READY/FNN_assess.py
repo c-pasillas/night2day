@@ -25,24 +25,30 @@ def load_data(truth, ML):
     M15 = truth["M15"]
     M16 = truth["M16"]
     DNB = truth['DNB']
-    MLnorm = ML['MLtruth']
+    DNB_FMN = truth['DNB_FMN']
+    DNB_logFMN = truth['DNB_log_FMN']
+    normML = ML['MLtruth']
     PREDICTAND_LABEL = ML["channel"][0]
-    ML_DNB = DNB_norm.denormalize(PREDICTAND_LABEL, MLnorm)
+    print("i am reverting the ML values")
+    DNB_ML = DNB_norm.denormalize(PREDICTAND_LABEL, normML)
 
-    DNBdiff = DNB - ML_DNB
+    DNBnorm_diff = DNB_FMN - normML
+    DNBrad_diff = DNB - DNB_ML
     x = DNB
-    y = ML_DNB
+    y = DNB_ML
     print('done with load-data')
-    return {"M12": M12, "M13": M13, "M14": M14, "M15": M15, "M16": M16, "DNB": DNB, "DNBdiff": DNBdiff, "x": DNB, "y": ML_DNB}
+    return {"M12": M12, "M13": M13, "M14": M14, "M15": M15, "M16": M16, "DNB": DNB, "DNB_FMN": DNB_FMN, "DNB_logFMN": DNB_logFMN, "normML": normML, "DNBdiff": DNBrad_diff, "DNB_normdiff": DNBnorm_diff, "x": DNB, "y": DNB_ML}
     
 def run_stats(data_dic, name):   
     #basic stats
     print("starting basic stats")
     ph.basic_stats(data_dic, name)
-    print("starting xy relations")
+    print("starting xy relations for normalized data")
+    ph.xy_relations(data_dic["DNB_FMN"],data_dic["normML"])
+    print("starting xy relations for radiances")
     ph.xy_relations(data_dic["x"],data_dic["y"])
-    print("draw cole")
-    ph.draw_COLE(data_dic, name)
+    #print("draw cole")
+    #ph.draw_COLE(data_dic, name)
     #scatter/densityplot DNB vs ML_DNB and save in folder with ML truths
 
 #############

@@ -8,6 +8,9 @@ from PIL import Image
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.metrics import explained_variance_score
 from sklearn.metrics import r2_score
+from matplotlib import cm
+from matplotlib.colors import Normalize 
+from scipy.interpolate import interpn
 
 #channel stats
 def basic_stats(dic, casename):
@@ -60,7 +63,6 @@ def basic_stats(dic, casename):
     #violin plots
     #plt.violinplot(cols, showextrema=False);
     
-    
 def xy_relations(array1, array2):
     y_true = array1.flatten() #DNB
     y_pred = array2.flatten() #ML
@@ -97,13 +99,9 @@ def xy_relations(array1, array2):
 
     from numpy import corrcoef
     COVAR = corrcoef(data1, data2)
-    print("im printing COVAR shape")
-    print(COVAR.shape)
     print("COVAR values for DNB and MLdata are", COVAR)
-  
     
-    
-    
+    #need to save all of this in a file to reference later
     
 def cloudfree(truths):
     CLOUD = truths['DNB_log_FMN'].flatten()>0.5
@@ -136,11 +134,10 @@ def scale(arr, percent_tail=2, percent_top=None, invert=False):
     lo, hi = sort_arr[left], sort_arr[-(1 + right)]
     byte_scale = 256 / (hi - lo)
     offset = 0 - lo * byte_scale
-    print(f'byte_scale={byte_scale:.2f} offset={offset:.2f}')
+    #print(f'byte_scale={byte_scale:.2f} offset={offset:.2f}')
     return (normi * byte_scale) + offset
 
 # #drawmy COLE data
-
 def mkIMG ():
     import pathlib
     p = pathlib.Path("IMAGES")
@@ -149,48 +146,88 @@ def mkIMG ():
     
 def draw_COLE(data_dic, name): 
     imagedir = mkIMG()
+    # TORS9999 = np.nan_to_num(TORS, copy=True, nan=9999, posinf=None, neginf=None)
+    #
     for i in range(0,10): #len(truth['latitude'])): #patches
         print(f"starting patch {i}")
         for label in data_dic:
             image_array = data_dic[label][i]
             p = imagedir / f'{name}_{label}_{i}.png'
-            if label == "DNBdiff":
+            if label == "DNBdiff" or label == "DNB_normdiff":
                 # plt.colorbar()
                 plt.imsave(str(p), image_array, cmap = "seismic", vmin = -0.4, vmax = 0.4)  
             else:
                 show_byte_img(scale(image_array), name = str(p))
 
-###### making ERF images 
 
+# #hexbin instead of scatter plot
+def hex (x,y):
+    #plt.hexbin(x, y, C=None, gridsize=100, bins=None, xscale='linear', yscale='linear', extent=None, cmap=None, norm=None, 
+#vmin=None, vmax=None, alpha=None, linewidths=None, edgecolors='face', reduce_C_function=<function mean>, mincnt=None, marginals=False, *, data=None, **kwargs)
+    plt.hexbin(x,y, edgecolors = None, label='DNB')#alpha =.002,
+    plt.xlabel('X value = Truth DNB')
+    plt.ylabel('Y value = ML DNB')
+    plt.legend()
+    plt.title('truth DNB vs ML DNB for Full Moon Norm Radiances')
+    plt.colorbar()
+    plt.show()
+
+
+# #density scatter plot for larger datsets
+def density_scatter( x , y, ax = None, sort = True, bins = 1000, **kwargs )   :
+    """
+    Scatter plot colored by 2d histogram
+    """
+    if ax is None :
+        fig , ax = plt.subplots()
+    data , x_e, y_e = np.histogram2d( x, y, bins = bins, density = True )
+    z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]) , 0.5*(y_e[1:]+y_e[:-1]) ) , data , np.vstack([x,y]).T , method = "splinef2d", bounds_error = False)
+
+    #To be sure to plot all data
+    z[np.where(np.isnan(z))] = 0.0
+
+    # Sort the points by density, so that the densest points are plotted last
+    if sort :
+        idx = z.argsort()
+        x, y, z = x[idx], y[idx], z[idx]
+
+    ax.scatter( x, y, c=z, **kwargs )
+
+    norm = Normalize(vmin = np.min(z), vmax = np.max(z))
+    cbar = fig.colorbar(cm.ScalarMappable(norm = norm), ax=ax)
+    cbar.ax.set_ylabel('Density')
+    #add labels
+    return ax
+                           
+                
+###### making ERF data
+            
 def ERF(array1, array2):
-
-       ###order may need to be modified (ie when do I do thngs that requrie flatten vs thingsthat need array and how to reshpae to original shape (ie if i need flatten to calcualte the ERF values butthen reshape to plot)
-    #ERF applications on ML and truth values for image translation
+    #ERF applications for image translation and stats
     log.info(f'starting the ERF processes')
-    #load raw radiance values (ML and original) or from above unnormPRED unnormTRU
     
-    rad = array1.flatten() #DNB #y_true
-    ML_rad = array2.flatten() #ML #y_pred
+    #load raw radiance values 
+    DNB = array1.flatten() #DNB #y_true
+    DNB_ML  = array2.flatten() #ML #y_pred
 
     # take the radiances and use the ERF display image scale
     Rmax= 1.26e-10 
     Rmin=2e-11
 
     #ERF stats
-    ERFimage_truth=  255 * np.sqrt(np.abs((rad[:]-Rmin)/(Rmax - Rmin)))
+    ERFimage_truth=  255 * np.sqrt(np.abs((DNB[:]-Rmin)/(Rmax - Rmin)))
     x= ERFimage_truth
     print(f'ERF DNB min/med/max/mean/std {x.min():.2f}/{np.median(x):.2f}/{x.max():.2f}/{x.mean():.2f}/{x.std():.2f}')
 
-    ERFimage_ML=  255 * np.sqrt(np.abs((ML_rad[:]-Rmin)/(Rmax - Rmin)))
+    ERFimage_ML=  255 * np.sqrt(np.abs((DNB_ML[:]-Rmin)/(Rmax - Rmin)))
     print(f'ERF ML_DNB min/med/max/mean/std {x.min():.2f}/{np.median(x):.2f}/{x.max():.2f}/{x.mean():.2f}/{x.std():.2f}')
-    
-    
+        
     x=ERFimage_truth#[:2000]
     y=ERFimage_ML#[:2000]
     print(x.shape, y.shape)
     
     #do i need to reshape? 
-    #calculate basic relaitons for ERF values
+    #calculate basic relations for ERF values
     xy_relations(x.flatten(),y.flatten())
     
     # plotting one image
@@ -257,49 +294,43 @@ def ERF(array1, array2):
                 
 
 # ###hexbins
+
 # #hexbin instead of scatter plot
 
-# #plt.hexbin(x, y, C=None, gridsize=100, bins=None, xscale='linear', yscale='linear', extent=None, cmap=None, norm=None, 
-# #vmin=None, vmax=None, alpha=None, linewidths=None, edgecolors='face', reduce_C_function=<function mean>, mincnt=None, marginals=False, *, data=None, **kwargs)
-
-#     #plt.hexbin(x,y, edgecolors = None, label='normalized DNB')#alpha =.002,
-#     #plt.xlabel('X value = Truth DNB')
-#     #plt.ylabel('Y value = ML DNB')
-#     #plt.legend()
-#     #plt.title('truth DNB vs ML DNB for Full Moon Norm Radiances using M15 band')
-#     #plt.colorbar()
-#     #plt.show()
+def hex (x,y):
+    #plt.hexbin(x, y, C=None, gridsize=100, bins=None, xscale='linear', yscale='linear', extent=None, cmap=None, norm=None, 
+#vmin=None, vmax=None, alpha=None, linewidths=None, edgecolors='face', reduce_C_function=<function mean>, mincnt=None, marginals=False, *, data=None, **kwargs)
+    plt.hexbin(x,y, edgecolors = None, label='DNB')#alpha =.002,
+    plt.xlabel('X value = Truth DNB')
+    plt.ylabel('Y value = ML DNB')
+    plt.legend()
+    plt.title('truth DNB vs ML DNB for Full Moon Norm Radiances')
+    plt.colorbar()
+    plt.show()
 
 
 # #density scatter plot for larger datsets
-# # from matplotlib import cm
-# # from matplotlib.colors import Normalize 
-# # from scipy.interpolate import interpn
+def density_scatter( x , y, ax = None, sort = True, bins = 1000, **kwargs )   :
+    """
+    Scatter plot colored by 2d histogram
+    """
+    if ax is None :
+        fig , ax = plt.subplots()
+    data , x_e, y_e = np.histogram2d( x, y, bins = bins, density = True )
+    z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]) , 0.5*(y_e[1:]+y_e[:-1]) ) , data , np.vstack([x,y]).T , method = "splinef2d", bounds_error = False)
 
-# def density_scatter( x , y, ax = None, sort = True, bins = 1000, **kwargs )   :
-#     """
-#     Scatter plot colored by 2d histogram
-#     """
-#     if ax is None :
-#         fig , ax = plt.subplots()
-#     data , x_e, y_e = np.histogram2d( x, y, bins = bins, density = True )
-#     z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]) , 0.5*(y_e[1:]+y_e[:-1]) ) , data , np.vstack([x,y]).T , method = "splinef2d", bounds_error = False)
+    #To be sure to plot all data
+    z[np.where(np.isnan(z))] = 0.0
 
-#     #To be sure to plot all data
-#     z[np.where(np.isnan(z))] = 0.0
+    # Sort the points by density, so that the densest points are plotted last
+    if sort :
+        idx = z.argsort()
+        x, y, z = x[idx], y[idx], z[idx]
 
-#     # Sort the points by density, so that the densest points are plotted last
-#     if sort :
-#         idx = z.argsort()
-#         x, y, z = x[idx], y[idx], z[idx]
+    ax.scatter( x, y, c=z, **kwargs )
 
-#     ax.scatter( x, y, c=z, **kwargs )
-
-#     norm = Normalize(vmin = np.min(z), vmax = np.max(z))
-#     cbar = fig.colorbar(cm.ScalarMappable(norm = norm), ax=ax)
-#     cbar.ax.set_ylabel('Density')
-#     #add labels
-#     return ax
-
-# density_scatter( x, y, bins = [30,30] )
-
+    norm = Normalize(vmin = np.min(z), vmax = np.max(z))
+    cbar = fig.colorbar(cm.ScalarMappable(norm = norm), ax=ax)
+    cbar.ax.set_ylabel('Density')
+    #add labels
+    return ax

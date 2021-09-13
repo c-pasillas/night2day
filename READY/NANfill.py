@@ -27,6 +27,24 @@ def fillit(case):
         filled[channels[i]] = new_case_4D[:,:,:,i] 
     return filled
 
+def fillit2(case):
+    channels = case['channels']
+    COUNT1 = np.count_nonzero(np.isnan(case))
+    print(f"there are {COUNT1} NANs")
+    ##fill it
+    new_case_4D = np.nan_to_num(case_4D, copy=True, nan=9999, posinf=None, neginf=None)
+    ###count the NANs
+    COUNT2 = np.count_nonzero(np.isnan(new_case_4D))
+    print(f"there are now {COUNT2} NANs")
+    return new_case_4D
+
+def fillit_dic(case):
+    filled = dict(fillit2(case[c], c) for c in channels)
+    chans = list(case['channels']) + list(norms)
+    new_case = {**case, **norms, 'channels': chans}
+    return new_case
+
+
 
 
 def NANfill(args):

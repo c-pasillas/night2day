@@ -22,11 +22,12 @@ import ABI_pack_case
 import VIIRS_btd
 import Mband_norm
 import DNB_norm
-
+import VIIRS_prep
 import NAN
 #import NANnearest
 import NANfill
 
+import I2M_patchnanaoi
 import MLR_train
 import FNN_train
 import FNN_predict
@@ -125,6 +126,12 @@ DNB_norm_p.set_defaults(func=DNB_norm.DNBnorm)
 DNB_norm_p.add_argument('npz_path', help='Path to npz file')
 DNB_norm_p.add_argument('-q', '--quiet', action='count', default=0)
 
+VIIRS_prep_p = subparsers.add_parser('VIIRS-prep', help='combines the DNBnorm, BTDprocess and Mband norm to one step')
+VIIRS_prep_p.set_defaults(func=VIIRS_prep.prep)
+VIIRS_prep_p.add_argument('npz_path', help='Path to npz file')
+VIIRS_prep_p.add_argument('-q', '--quiet', action='count', default=0)
+
+
 NAN_p = subparsers.add_parser('NAN', help='Remove all patches with ANY NANs-- only use after patched')
 NAN_p.set_defaults(func=NAN.NAN)
 NAN_p.add_argument('npz_path', help='Path to npz file')
@@ -152,6 +159,20 @@ aoi_p.add_argument('npz_path', help='Path to npz file')
 aoi_p.add_argument('--name', default='aoi_case.npz', help='Name of filtered .npz file output')
 aoi_p.add_argument('NSEW', type=int, nargs=4, help='NSEW bounding box')
 aoi_p.add_argument('-q', '--quiet', action='count', default=0)
+
+
+######### combine patch, NAN patch removal and AOI into oen for training data prep
+I2M_patchnanaoi_p = subparsers.add_parser('I2M patch nan aoi', help='Patch and NaN patch removal and AOI boundry confirmation')
+I2M_patchnanaoi_p.set_defaults(func=I2M_patchnanaoi.patchnaoi)
+I2M_patchnanaoi_p.add_argument('-q', '--quiet', action='count', default=0)
+I2M_patchnanaoi_p.add_argument('npz_path', help='Path to npz file')
+I2M_patchnanaoi_p.add_argument('models_path', help='Path to models directory')
+I2M_patchnanaoi_p.add_argument('nick', help='Name to create new folder structure')
+
+
+
+
+
 
 ######### MLR steps
 MLR_p = subparsers.add_parser('MLR-train', help='Train a MLR SKL model from .npz data')

@@ -29,13 +29,16 @@ def function(model, case, PREDICTORS, PREDICTAND):
     tand = case[PREDICTAND] #y in array, 
 
     TORS = tors.reshape(-1, len(PREDICTORS))
-    TAND = tand.flatten()
+    TORS9999 = np.nan_to_num(TORS, copy=True, nan=9999, posinf=None, neginf=None)
     
     o_shape = tand.shape
 
     #lets predict on all the data
     print("stacked channels now predicting")
-    model_output= model.predict(TORS)
+    model_output= model.predict(TORS9999)
+    #replace the 9999 with NANs 
+    NANindex =np.isnan(TORS).any(axis =1) 
+    mode_output[NANindex] = np.nan
     model_outputfinal= model_output.reshape(o_shape)
     return model_outputfinal
 
