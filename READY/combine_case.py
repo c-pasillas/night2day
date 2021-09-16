@@ -22,10 +22,3 @@ def combine_cases(cases):
     comb = {**ubercase, **metas}
     return comb
 
-def main(args)
-    case = np.load(args.npz_path)
-    print("I loaded the case")
-    Mband_norm = Mband_norms(case)
-    print("I am now saving case")
-    savepath = args.npz_path[:-4]+ "_Mbandnorm.npz"
-    np.savez(savepath,**Mband_norm)

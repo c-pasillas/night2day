@@ -104,7 +104,7 @@ ABI_pack_case_p.add_argument('--save-images', action='store_true', help='Should 
 ABI_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
     
 comb_p = subparsers.add_parser('combine-cases', help='combine multiple cases')
-comb_p.set_defaults(func=combine_case.main)
+comb_p.set_defaults(func=combine_cmd)
 comb_p.add_argument('-q', '--quiet', action='count', default=0)
 comb_p.add_argument('--outputname', default = 'COMBINED.npz', help ='the name of new combined file')
 comb_p.add_argument('npz_path', nargs='+', help='npz files to combine')
