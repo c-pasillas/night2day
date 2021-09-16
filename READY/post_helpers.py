@@ -165,7 +165,7 @@ def draw_COLE(data_dic, name):
 def hex (x,y):
     #plt.hexbin(x, y, C=None, gridsize=100, bins=None, xscale='linear', yscale='linear', extent=None, cmap=None, norm=None, 
 #vmin=None, vmax=None, alpha=None, linewidths=None, edgecolors='face', reduce_C_function=<function mean>, mincnt=None, marginals=False, *, data=None, **kwargs)
-    plt.hexbin(x,y, edgecolors = None, label='DNB')#alpha =.002,
+    plt.hexbin(x, y, edgecolors=None, label='DNB') # alpha =.002,
     plt.xlabel('X value = Truth DNB')
     plt.ylabel('Y value = ML DNB')
     plt.legend()
@@ -174,17 +174,15 @@ def hex (x,y):
     #plt.show()
 
     plt.plot(x, y)
-fig = plt.gcf()
-fig.savefig('fig1.pdf')
-    
-    
+    fig = plt.gcf()
+    fig.savefig('fig1.pdf')
 
 # #density scatter plot for larger datsets
-def density_scatter( x , y, ax = None, sort = True, bins = 1000, **kwargs )   :
+def density_scatter(x, y, ax=None, sort=True, bins=1000, **kwargs):
     """
     Scatter plot colored by 2d histogram
     """
-    if ax is None :
+    if ax is None:
         fig , ax = plt.subplots()
     data , x_e, y_e = np.histogram2d( x, y, bins = bins, density = True )
     z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]) , 0.5*(y_e[1:]+y_e[:-1]) ) , data , np.vstack([x,y]).T , method = "splinef2d", bounds_error = False)

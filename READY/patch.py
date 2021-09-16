@@ -74,6 +74,11 @@ def patch_case(case, patch_size=256):
     new_case = {**arr_data, **metas}
     return new_case
 
+
+def patchcase(case):
+    newcase = patch_case(case)
+    return newcase
+   
 def patch(args):
     case = np.load(args.npz_path)
     patched = patch_case(case, args.PATCHSIZE)

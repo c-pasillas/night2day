@@ -23,20 +23,19 @@ def normalize_band(arr, band):
     ret.clip(max=1, out=ret)
     return band + 'norm', ret
 
-def Mband_norms(case):
+def Mband_norms(case, bands=None):
     """Given a case with array data for each raw channel,
     produce a dictionary with each of the normalized channels."""
-    norms = dict(normalize_band(case[band], band) for band in m_bands)
+    if not bands:
+        bands = m_bands
+    norms = dict(normalize_band(case[band], band) for band in bands)
     chans = list(case['channels']) + list(norms)
     new_case = {**case, **norms, 'channels': chans}
     return new_case
 
-
 def mband_case (case):
-    Mband_norms(case)
+    new_case = Mband_norms(case)
     return new_case
-    
-
 
 def mband(args):
     case = np.load(args.npz_path)

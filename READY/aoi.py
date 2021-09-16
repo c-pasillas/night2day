@@ -29,7 +29,7 @@ def aoi_case(case,nsew):
     if NSEW[0] == NSEW[1] == NSEW[2] == NSEW[3] == 0:
         NSEW = 45, -5, -105, 105
     log.info(f"Filtering images based on AOI {NSEW}")
-    a_patches = range(len(case['DNB']))
+    a_patches = range(len(case['latitude']))
     aoi_patches = filter_patches(a_patches, case['latitude'], case['longitude'])
     log.info(f'Kept patches: {len(aoi_patches)} / {len(a_patches)}')
     channels_to_filter = list(case['channels']) + ['samples']

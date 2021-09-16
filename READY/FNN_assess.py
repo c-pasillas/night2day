@@ -40,20 +40,23 @@ def load_data(truth, ML):
     return {"M12": M12, "M13": M13, "M14": M14, "M15": M15, "M16": M16, "DNB": DNB, "DNB_FMN": DNB_FMN, "DNB_logFMN": DNB_logFMN, "normML": normML, "DNBdiff": DNBrad_diff, "DNB_normdiff": DNBnorm_diff, "x": DNB, "y": DNB_ML}
     
 def run_stats(data_dic, name):   
-    #basic stats
+    # basic stats
     print("starting basic stats")
-    ph.basic_stats(data_dic, name)
+    #ph.basic_stats(data_dic, name)
+    
     print("starting xy relations for normalized data")
-    ph.xy_relations(data_dic["DNB_FMN"],data_dic["normML"])
+    #ph.xy_relations(data_dic["DNB_FMN"],data_dic["normML"])
     print("starting xy relations for radiances")
-    ph.xy_relations(data_dic["x"],data_dic["y"])
+    #ph.xy_relations(data_dic["x"],data_dic["y"])
+    
     print("draw cole")
     ph.draw_COLE(data_dic, name)
     print("making hexplot")
-    ph.hex(data_dic["x"],data_dic["y"])
+    ph.hex(data_dic["x"], data_dic["y"])
+    
     #print('making density scatter plot")
     #ph.density_scatter( data_dic['x'],  data_dic['y'], bins = [30,30] )
-    #print("making ERF plats and calcs")
+    print("making ERF plats and calcs")
     ph.ERF(data_dic["x"],data_dic["y"])
 
 
@@ -65,6 +68,7 @@ def assessment(args):
     ML = np.load(args.ML_path)
     print("I loaded the ML_DNB case")
     
-    data_dic = load_data(truth, ML)  #currently a dict of arrays 
+    data_dic = load_data(truth, ML)#currently a dict of arrays 
+    print('Done with load_data(truth, ML)')
     analysis = run_stats(data_dic, name)
     print("i am done running assessment, look in folders for data")

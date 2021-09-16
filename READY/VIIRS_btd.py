@@ -29,21 +29,29 @@ def btd_and_norm(arr1, arr2, band1, band2):
     name = 'BTD' + band1[1:] + band2[1:]
     return {name + 'norm': ret} #only returning BTD norms ( no need to keep the BTD regulars)
 
-def all_btd_norms(case, channels=None):
+def split_pairs(btd):
+    b = btd.replace('BTD', '')
+    return 'M' + b[:2], 'M' + b[2:]
+
+def all_btd_norms(case, channels=None, derive=None):
     """For several possible pairs of channels, compute the btd differences.
     Gather up all btd channels in a dictionary to return."""
-    if not channels:
+    pairs = []
+    if derive:
+        pairs = [split_pairs(b) for b in derive]
+    if channels == None:
         channels = [c for c in case['channels'] if c in m_bands]
-    pairs = list(filter(lambda pair: pair[0] < pair[1],
-                        it.product(channels, channels)))
+    if not pairs:
+        pairs = list(filter(lambda pair: pair[0] < pair[1],
+                            it.product(channels, channels)))
     btds = [btd_and_norm(case[b1], case[b2], b1, b2) for b1, b2 in pairs]
     btd_norms = {k: v for btd in btds for k, v in btd.items()}
     chans = list(case['channels']) + list(btd_norms)
     new_case = {**case, **btd_norms, 'channels': chans}
     return new_case
 
-def btd_case (case):
-    all_btd_norms(case)
+def btd_case (case, channels=None, derive=None):
+    new_case = all_btd_norms(case, channels=channels, derive=derive)
     return new_case
     
     

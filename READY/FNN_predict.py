@@ -37,8 +37,9 @@ def function(model, case, PREDICTORS, PREDICTAND):
     print("stacked channels now predicting")
     model_output= model.predict(TORS9999)
     #replace the 9999 with NANs 
+    print("im done predicting")
     NANindex =np.isnan(TORS).any(axis =1) 
-    mode_output[NANindex] = np.nan
+    model_output[NANindex] = np.nan
     model_outputfinal= model_output.reshape(o_shape)
     return model_outputfinal
 

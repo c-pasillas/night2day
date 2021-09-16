@@ -14,11 +14,17 @@ def patchnaoi(args):
     case = np.load(args.npz_path)
     print("I loaded the case") #case is large 3K4K
     
-    case = patch.patch(case) # patch the case
-    case = NAN.NAN(case) # remove patches with 9999
+    case = patch.patchcase(case)
+    print("I patched the case")
+    # patch the case
+    case = NAN.NANcase(case) # remove patches with NANs
+    print("I removed patches with NANs in them")
     if args.aoi:
         case = aoi.aoi_case(case, args.aoi)
-          
+        print( "I am done with AOI cropping")      
     print("I am now saving case")
-    savepath = args.npz_path[:-4]+ "_trainready.npz"
+    savepath = args.npz_path[:-4]+ "_I2MPAN.npz"
     np.savez(savepath,**case)
+    print("I saved the case")
+    
+    

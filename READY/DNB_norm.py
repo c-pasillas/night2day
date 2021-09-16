@@ -72,7 +72,7 @@ def DNB_norms(case):
 
 
 def DNBnorm_case (case):
-    DNB_norms(case)
+    new_case = DNB_norms(case)
     return new_case
     
 

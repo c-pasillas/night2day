@@ -38,7 +38,6 @@ def set_up(case, predictors, predictand):
     
     return train_test_split(TORS, TAND, test_size=ts, random_state=rs)
 
-  
 ######THE MODEL######
 def create_model(n_input): ####options
     #number of inputs ( decided before here)
@@ -74,15 +73,18 @@ def FNN_train(args):
     print("i am now making the model")
     n_input = len(args.Predictors)
     model = create_model(n_input)
+                         
     #history = model.fit(x, y, validation_split=0.30, epochs=n_epochs, batch_size=128)
     # number of epochs to train 
     n_epochs = 2
     #batch size, # patches before update small=finer resolution/> time may get in a minumum, large < time may jump a minimum
     bs = 1000
-    history = model.fit(TORS_train, TAND_train,validation_data =(TORS_test,TAND_test), epochs=n_epochs, batch_size=bs)   
+    history = model.fit(TORS_train, TAND_train,validation_data =(TORS_test,TAND_test), epochs=n_epochs, batch_size=bs)
+
     print("I am now saving the model")
     made =time.strftime("%Y-%m-%dT%H%M")
     model.save(f'FNN_{made}')
+
     #save the history as a text file
     with open (f"myhistory_{made}", "w") as f:
         import pprint

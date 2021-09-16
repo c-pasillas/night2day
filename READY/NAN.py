@@ -23,8 +23,8 @@ def remove_9999s(case):
     print("done stacking case about to filter for 9999s")
     IDX = [i for i in range(len(case_4D)) if not has_9999s(case_4D[i],i)]  
     new_case_4D = case_4D[IDX]
-    new_samples = case['samples'][IDX]
-    new_patch = case['PATCH_ID'][IDX]
+    new_samples = np.array(case['samples'])[IDX]
+    new_patch = np.array(case['PATCH_ID'])[IDX]
     
     n9999 = {"PATCH_ID": new_patch, "samples": new_samples, "channels": channels}
     print("reassembling the case")
@@ -41,8 +41,8 @@ def remove_nans(case):
     print("done stacking case about to filter for NANs")
     IDX = [i for i in range(len(case_4D)) if not has_nans(case_4D[i],i)]  
     new_case_4D = case_4D[IDX]
-    new_samples = case['samples'][IDX]
-    new_patch = case['PATCH_ID'][IDX]
+    new_samples = np.array(case['samples'])[IDX]
+    new_patch = np.array(case['PATCH_ID'])[IDX]
     
     nanned = {"PATCH_ID": new_patch, "samples": new_samples, "channels": channels}
     print("reassembling the case")
@@ -50,7 +50,8 @@ def remove_nans(case):
         #remaking my dic of 3 D arrays channels[i] is the "DNB, M12" etc then fills with the array for the data
         nanned[channels[i]] = new_case_4D[:,:,:,i] 
     return nanned
-  
+
+
 def NAN9999(args):
     case = np.load(args.npz_path)
     print("I loaded the case")
@@ -58,6 +59,11 @@ def NAN9999(args):
     print("I am now saving case")
     savepath = args.npz_path[:-4] + "_NANis9999.npz"
     np.savez(savepath,**n9999 )
+
+def NANcase(case):
+    newcase = remove_nans(case)
+    return newcase   
+    
     
 def NAN(args):
     case = np.load(args.npz_path)

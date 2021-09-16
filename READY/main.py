@@ -28,6 +28,7 @@ import NAN
 import NANfill
 
 import I2M_patchnanaoi
+import I2M_derive
 import MLR_train
 import FNN_train
 import FNN_predict
@@ -103,7 +104,7 @@ ABI_pack_case_p.add_argument('--save-images', action='store_true', help='Should 
 ABI_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
     
 comb_p = subparsers.add_parser('combine-cases', help='combine multiple cases')
-comb_p.set_defaults(func=combine_cmd)
+comb_p.set_defaults(func=combine_case.main)
 comb_p.add_argument('-q', '--quiet', action='count', default=0)
 comb_p.add_argument('--outputname', default = 'COMBINED.npz', help ='the name of new combined file')
 comb_p.add_argument('npz_path', nargs='+', help='npz files to combine')
@@ -162,17 +163,18 @@ aoi_p.add_argument('-q', '--quiet', action='count', default=0)
 
 
 ######### combine patch, NAN patch removal and AOI into oen for training data prep
-I2M_patchnanaoi_p = subparsers.add_parser('I2M patch nan aoi', help='Patch and NaN patch removal and AOI boundry confirmation')
+I2M_patchnanaoi_p = subparsers.add_parser('I2M-PNA', help='Patch and NaN patch removal and AOI boundry confirmation')
 I2M_patchnanaoi_p.set_defaults(func=I2M_patchnanaoi.patchnaoi)
 I2M_patchnanaoi_p.add_argument('-q', '--quiet', action='count', default=0)
 I2M_patchnanaoi_p.add_argument('npz_path', help='Path to npz file')
-I2M_patchnanaoi_p.add_argument('models_path', help='Path to models directory')
-I2M_patchnanaoi_p.add_argument('nick', help='Name to create new folder structure')
+I2M_patchnanaoi_p.add_argument('--aoi', type=int, nargs=4, help='NSEW bounding box')
 
-
-
-
-
+I2M_derive_p = subparsers.add_parser('I2M-derive', help='Derive DNB, Mband and BTD')
+I2M_derive_p.set_defaults(func=I2M_derive.main)
+I2M_derive_p.add_argument('-q', '--quiet', action='count', default=0)
+I2M_derive_p.add_argument('npz_path', help='Path to npz file')
+I2M_derive_p.add_argument('nickname', help='Name to attach to output file name')
+I2M_derive_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
 
 ######### MLR steps
 MLR_p = subparsers.add_parser('MLR-train', help='Train a MLR SKL model from .npz data')
