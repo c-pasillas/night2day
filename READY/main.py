@@ -13,24 +13,28 @@ import common
 from common import log, bold, reset, color, rgb, blue
 
 import aoi
-import crop
-import combine_case
+#import crop
+#import combine_case
 import patch
 
-import VIIRS_pack_case
-import ABI_pack_case
+#import VIIRS_pack_case
+#import ABI_pack_case
 import VIIRS_btd
 import Mband_norm
 import DNB_norm
 import VIIRS_prep
 import NAN
+import NANrows
 #import NANnearest
 import NANfill
 
 import I2M_patchnanaoi
 import I2M_derive
+import I2M_all
 import MLR_train
 import FNN_train
+import FNN_train_I2M_all
+import FNN_retrain
 import FNN_predict
 import FNN_assess
 
@@ -67,12 +71,12 @@ def MLR_cmd(args):
     MLR_SKL.MLR(args.npzfilename, args.nick)
 def scatter_cmd(args):
     scatter.scatter(args.npzfilename, args.nick, args.samplesize)      
-def combine_cmd(args):
-    log.info(f'Starting combine cases')
-    output = combine_case.combine_cases([np.load(p) for p in args.npz_path])
-    log.info(f'Writing {blue}{args.npz_path[0]}.npz{reset}')
-    np.savez(args.outputname, **output)
-    log.info(f'Wrote {blue}{args.npz_path[0]}.npz{reset}')
+#def combine_cmd(args):
+#    log.info(f'Starting combine cases')
+#    output = combine_case.combine_cases([np.load(p) for p in args.npz_path])
+#    log.info(f'Writing {blue}{args.npz_path[0]}.npz{reset}')
+#    np.savez(args.outputname, **output)
+ #   log.info(f'Wrote {blue}{args.npz_path[0]}.npz{reset}')
 
 # night2day status [case root dir | night2day.db file]
 # night2day info file
@@ -90,24 +94,24 @@ msg = (f'Pack a case into a single array',
        '''Process and pack a case into a single array.
        Matches time-correlated images, regularizes dimensions across all images.''')
 ##### PACKCASES######
-VIIRS_pack_case_p = subparsers.add_parser('VIIRS-pack-case', help=msg[0], description=msg[1])
-VIIRS_pack_case_p.set_defaults(func=VIIRS_pack_case.pack_case)
-VIIRS_pack_case_p.add_argument('h5_dir', help='Path to directory with the .h5 files')
-VIIRS_pack_case_p.add_argument('--save-images', action='store_true', help='Should save image files')
-VIIRS_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
+#VIIRS_pack_case_p = subparsers.add_parser('VIIRS-pack-case', help=msg[0], description=msg[1])
+#VIIRS_pack_case_p.set_defaults(func=VIIRS_pack_case.pack_case)
+#VIIRS_pack_case_p.add_argument('h5_dir', help='Path to directory with the .h5 files')
+#VIIRS_pack_case_p.add_argument('--save-images', action='store_true', help='Should save image files')
+#VIIRS_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
 
-ABI_pack_case_p = subparsers.add_parser('ABI-pack-case')
-ABI_pack_case_p.set_defaults(func=ABI_pack_case.pack_case)
-ABI_pack_case_p.add_argument('h5_dir')
-ABI_pack_case_p.add_argument('nc_dir')
-ABI_pack_case_p.add_argument('--save-images', action='store_true', help='Should save image files')
-ABI_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
+#ABI_pack_case_p = subparsers.add_parser('ABI-pack-case')
+#ABI_pack_case_p.set_defaults(func=ABI_pack_case.pack_case)
+#ABI_pack_case_p.add_argument('h5_dir')
+#ABI_pack_case_p.add_argument('nc_dir')
+#ABI_pack_case_p.add_argument('--save-images', action='store_true', help='Should save image files')
+#ABI_pack_case_p.add_argument('-q', '--quiet', action='count', default=0)
     
-comb_p = subparsers.add_parser('combine-cases', help='combine multiple cases')
-comb_p.set_defaults(func=combine_cmd)
-comb_p.add_argument('-q', '--quiet', action='count', default=0)
-comb_p.add_argument('--outputname', default = 'COMBINED.npz', help ='the name of new combined file')
-comb_p.add_argument('npz_path', nargs='+', help='npz files to combine')
+#comb_p = subparsers.add_parser('combine-cases', help='combine multiple cases')
+#comb_p.set_defaults(func=combine_cmd)
+#comb_p.add_argument('-q', '--quiet', action='count', default=0)
+#comb_p.add_argument('--outputname', default = 'COMBINED.npz', help ='the name of new combined file')
+#comb_p.add_argument('npz_path', nargs='+', help='npz files to combine')
 
 ####MODIFY DATA
 
@@ -136,7 +140,15 @@ VIIRS_prep_p.add_argument('-q', '--quiet', action='count', default=0)
 NAN_p = subparsers.add_parser('NAN', help='Remove all patches with ANY NANs-- only use after patched')
 NAN_p.set_defaults(func=NAN.NAN)
 NAN_p.add_argument('npz_path', help='Path to npz file')
+NAN_p.add_argument('--keep', action = 'store_true', help='removed NANs on case unless flagged otherwise')
 NAN_p.add_argument('-q', '--quiet', action='count', default=0)
+
+NANrows_p = subparsers.add_parser('NANrows', help='Remove all samples with NAN rows--')
+NANrows_p.set_defaults(func=NANrows.NAN)
+NANrows_p.add_argument('npz_path', help='Path to npz file')
+NANrows_p.add_argument('--keep', action = 'store_true', help='removed rows of NANs and filled random NANS w 0 on case unless flagged otherwise')
+NANrows_p.add_argument('-q', '--quiet', action='count', default=0)
+
 
 NANfill_p = subparsers.add_parser('NANfill', help='Replace all NANs w 9999')
 NANfill_p.set_defaults(func=NANfill.NANfill)
@@ -176,6 +188,14 @@ I2M_derive_p.add_argument('npz_path', help='Path to npz file')
 I2M_derive_p.add_argument('nickname', help='Name to attach to output file name')
 I2M_derive_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
 
+I2M_all_p = subparsers.add_parser('I2M-all', help='Does ALL I2M functions in the following order patch, AOI (if flagged), nan patch removal, Derive both DNB, norms for the Mband and BTDs we set as Predictors')
+I2M_all_p.set_defaults(func=I2M_all.main)
+I2M_all_p.add_argument('-q', '--quiet', action='count', default=0)
+I2M_all_p.add_argument('npz_path', help='Path to npz file')
+I2M_all_p.add_argument('--aoi', type=int, nargs=4, help='NSEW bounding box')
+I2M_all_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
+
+
 ######### MLR steps
 MLR_p = subparsers.add_parser('MLR-train', help='Train a MLR SKL model from .npz data')
 MLR_p.set_defaults(func=MLR_train.MLR)
@@ -193,6 +213,21 @@ FNN_train_p.add_argument('--aoi', type=int, nargs=4, help='NSEW bounding box')
 FNN_train_p.add_argument('--DNB', help='the DNB truth we are using')
 FNN_train_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
 FNN_train_p.add_argument('-q', '--quiet', action='count', default=0)
+
+FNN_train_I2M_all_p = subparsers.add_parser('FNN-case-train', help='Train a FNN given a colocated only case file, will run I2M on it all')
+FNN_train_I2M_all_p.set_defaults(func=FNN_train_I2M_all.maintrain)
+FNN_train_I2M_all_p.add_argument('train_path', help='Path to npz file for training data')
+FNN_train_I2M_all_p.add_argument('val_path', help='Path to npz file for validation data')
+FNN_train_I2M_all_p.add_argument('--aoi', type=int, nargs=4, help='NSEW bounding box')
+FNN_train_I2M_all_p.add_argument('--DNB', help='the DNB truth we are using')
+FNN_train_I2M_all_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
+FNN_train_I2M_all_p.add_argument('-q', '--quiet', action='count', default=0)
+
+
+FNN_retrain_p = subparsers.add_parser('FNN-retrain', help='REtrain a FNN given a predictos/predictand array meant for use after inital train on data')
+FNN_retrain_p.set_defaults(func=FNN_retrain.FNN_retrain)
+FNN_retrain_p.add_argument('npz_path', help='Path to npz file of TORS/TAND')
+FNN_retrain_p.add_argument('-q', '--quiet', action='count', default=0)
 
 FNN_predict_p = subparsers.add_parser('FNN-predict', help='Predict ML values with FNN') #may become predict only) 
 FNN_predict_p.set_defaults(func=FNN_predict.predict)
