@@ -28,7 +28,7 @@ import NANrows
 #import NANnearest
 import NANfill
 
-import I2M_patchnanaoi
+import I2M_patchnaoi
 import I2M_derive
 import I2M_all
 import MLR_train
@@ -147,6 +147,7 @@ NANrows_p = subparsers.add_parser('NANrows', help='Remove all samples with NAN r
 NANrows_p.set_defaults(func=NANrows.NAN)
 NANrows_p.add_argument('npz_path', help='Path to npz file')
 NANrows_p.add_argument('--keep', action = 'store_true', help='removed rows of NANs and filled random NANS w 0 on case unless flagged otherwise')
+NANrows_p.add_argument('--both', action = 'store_true', help='if not called does individuallys, if called will run and save both the norow and yesrows')
 NANrows_p.add_argument('-q', '--quiet', action='count', default=0)
 
 
@@ -175,11 +176,11 @@ aoi_p.add_argument('-q', '--quiet', action='count', default=0)
 
 
 ######### combine patch, NAN patch removal and AOI into oen for training data prep
-I2M_patchnanaoi_p = subparsers.add_parser('I2M-PNA', help='Patch and NaN patch removal and AOI boundry confirmation')
-I2M_patchnanaoi_p.set_defaults(func=I2M_patchnanaoi.patchnaoi)
-I2M_patchnanaoi_p.add_argument('-q', '--quiet', action='count', default=0)
-I2M_patchnanaoi_p.add_argument('npz_path', help='Path to npz file')
-I2M_patchnanaoi_p.add_argument('--aoi', type=int, nargs=4, help='NSEW bounding box')
+I2M_patchnaoi_p = subparsers.add_parser('I2M-PNA', help='Patch and AOI boundry confirmation')
+I2M_patchnaoi_p.set_defaults(func=I2M_patchnaoi.patchnaoi)
+I2M_patchnaoi_p.add_argument('-q', '--quiet', action='count', default=0)
+I2M_patchnaoi_p.add_argument('npz_path', help='Path to npz file')
+I2M_patchnaoi_p.add_argument('--aoi', type=int, nargs=4, help='NSEW bounding box')
 
 I2M_derive_p = subparsers.add_parser('I2M-derive', help='Derive DNB, Mband and BTD')
 I2M_derive_p.set_defaults(func=I2M_derive.main)
@@ -285,7 +286,9 @@ args.func(args)
 print(f'Started at  {bold}{starttime}{reset}')
 print(f'Finished at {bold}{time.ctime()}{reset}')
 tend = time.time()
-print(f'Took {bold}{tend-tstart:.2f}{reset} seconds to run')
+#print(f'Took {bold}{tend-tstart:.2f}{reset} seconds to run')
+secondspast = tend-tstart
+print(f'Took {bold}{secondspast/60:.2f}{reset} minutes to run')
 
 
 

@@ -70,7 +70,7 @@ def patch_case(case, patch_size=256):
 
     metas = {c: case[c] for c in meta_channels}
     patch_samples = [case['samples'][p[0]] for p in a_patches]
-    metas['samples'] = patch_samples
+    metas['samples'] = np.array(patch_samples)
     new_case = {**arr_data, **metas}
     return new_case
 

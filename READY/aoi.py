@@ -48,11 +48,14 @@ def aoi_case(case,nsew):
 
 def aoi(args):
     path = Path(args.npz_path).resolve()
+    #if want to rename to include the AOI specified
     out_name = args.name if '.npz' in args.name else args.name + '.npz'
     f = np.load(path)
     g = aoi_case(f, args.NSEW)
     out_path = path.parent / out_name
-    log.info(f'Writing {blue}{out_path.name}{reset}')
-    np.savez(out_path, **g)
-    log.info(f'Wrote {blue}{out_path.name}{reset}')
+    #log.info(f'Writing {blue}{out_path.name}{reset}')
+    #np.savez(out_path, **g)
+    savepath = args.npz_path[:-4]+ f"_aoi.npz"
+    np.savez(savepath, **g)
+    log.info(f'Wrote {blue}{savepath}{reset}')
 
