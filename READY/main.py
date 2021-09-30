@@ -33,14 +33,14 @@ import I2M_derive
 import I2M_all
 import MLR_train
 import FNN_train
-import FNN_train_I2M_all
+#import FNN_train_I2M_all
 import FNN_retrain
 import FNN_predict
 import FNN_assess
 
-import normalize
+#import normalize
 #import learning_prep
-import model_validation
+#import model_validation
 #import MLR_postprocess
 #import INPUT2MODEL
 
@@ -215,14 +215,14 @@ FNN_train_p.add_argument('--DNB', help='the DNB truth we are using')
 FNN_train_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
 FNN_train_p.add_argument('-q', '--quiet', action='count', default=0)
 
-FNN_train_I2M_all_p = subparsers.add_parser('FNN-case-train', help='Train a FNN given a colocated only case file, will run I2M on it all')
-FNN_train_I2M_all_p.set_defaults(func=FNN_train_I2M_all.maintrain)
-FNN_train_I2M_all_p.add_argument('train_path', help='Path to npz file for training data')
-FNN_train_I2M_all_p.add_argument('val_path', help='Path to npz file for validation data')
-FNN_train_I2M_all_p.add_argument('--aoi', type=int, nargs=4, help='NSEW bounding box')
-FNN_train_I2M_all_p.add_argument('--DNB', help='the DNB truth we are using')
-FNN_train_I2M_all_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
-FNN_train_I2M_all_p.add_argument('-q', '--quiet', action='count', default=0)
+#FNN_train_I2M_all_p = subparsers.add_parser('FNN-case-train', help='Train a FNN given a colocated only case file, will run I2M on it all')
+#FNN_train_I2M_all_p.set_defaults(func=FNN_train_I2M_all.maintrain)
+#FNN_train_I2M_all_p.add_argument('train_path', help='Path to npz file for training data')
+#FNN_train_I2M_all_p.add_argument('val_path', help='Path to npz file for validation data')
+#FNN_train_I2M_all_p.add_argument('--aoi', type=int, nargs=4, help='NSEW bounding box')
+#FNN_train_I2M_all_p.add_argument('--DNB', help='the DNB truth we are using')
+#FNN_train_I2M_all_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
+#FNN_train_I2M_all_p.add_argument('-q', '--quiet', action='count', default=0)
 
 
 FNN_retrain_p = subparsers.add_parser('FNN-retrain', help='REtrain a FNN given a predictos/predictand array meant for use after inital train on data')
@@ -246,18 +246,18 @@ FNN_assess_p.add_argument('-q', '--quiet', action='count', default=0)
 
 
 ####### old files ####### 
-norm_p = subparsers.add_parser('normalize', help='Normalize and derive channels')
-norm_p.set_defaults(func=normalize.normalize)
-norm_p.add_argument('npz_path', help='Path to npz file')
-norm_p.add_argument('-q', '--quiet', action='count', default=0)
+#norm_p = subparsers.add_parser('normalize', help='Normalize and derive channels')
+#norm_p.set_defaults(func=normalize.normalize)
+#norm_p.add_argument('npz_path', help='Path to npz file')
+#norm_p.add_argument('-q', '--quiet', action='count', default=0)
 
-learn_p = subparsers.add_parser('learn-prep', help='Create file for input to learning')
-learn_p.set_defaults(func=learning_cmd)
-learn_p.add_argument('-q', '--quiet', action='count', default=0)
+#learn_p = subparsers.add_parser('learn-prep', help='Create file for input to learning')
+#learn_p.set_defaults(func=learning_cmd)
+#learn_p.add_argument('-q', '--quiet', action='count', default=0)
 
-model_val_p = subparsers.add_parser('model-val', help='Create  validation file for model validation')
-model_val_p.set_defaults(func=model_val_cmd)
-model_val_p.add_argument('-q', '--quiet', action='count', default=0)
+#model_val_p = subparsers.add_parser('model-val', help='Create  validation file for model validation')
+#model_val_p.set_defaults(func=model_val_cmd)
+#model_val_p.add_argument('-q', '--quiet', action='count', default=0)
 
 #MLR_post = subparsers.add_parser('MLR-post', help='take npz and model and make final data sets')
 #MLR_post.set_defaults(func=MLR_postprocess.postprocess)
