@@ -91,9 +91,9 @@ def NAN(args):
     if args.both:
         keepnanned, removenanned = both_nans(case)
         savepath = args.npz_path[:-4] + "_yes_NANrows.npz"
-        np.savez(savepath,**keepnanned) 
+        np.savez_compressed(savepath,**keepnanned) 
         savepath = args.npz_path[:-4] + "_no_NANrows.npz"
-        np.savez(savepath,**removenanned )
+        np.savez_compressed(savepath,**removenanned )
         return
     if not args.keep:
         nanned = remove_nans(case)
@@ -104,4 +104,4 @@ def NAN(args):
     print("I am now saving case")
     
     savepath = args.npz_path[:-4] + end
-    np.savez(savepath,**nanned )
+    np.savez_compressed(savepath,**nanned )

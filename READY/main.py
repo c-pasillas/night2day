@@ -189,7 +189,7 @@ I2M_derive_p.add_argument('npz_path', help='Path to npz file')
 I2M_derive_p.add_argument('nickname', help='Name to attach to output file name')
 I2M_derive_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
 
-I2M_all_p = subparsers.add_parser('I2M-all', help='Does ALL I2M functions in the following order patch, AOI (if flagged), nan patch removal, Derive both DNB, norms for the Mband and BTDs we set as Predictors')
+I2M_all_p = subparsers.add_parser('I2M-all', help='Does ALL I2M functions in the following order patch, AOI (if flagged), Derive both DNB, norms for the specific Mband and BTDs we set as Predictors')
 I2M_all_p.set_defaults(func=I2M_all.main)
 I2M_all_p.add_argument('-q', '--quiet', action='count', default=0)
 I2M_all_p.add_argument('npz_path', help='Path to npz file')

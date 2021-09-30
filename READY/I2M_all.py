@@ -29,9 +29,7 @@ def I2M_all (case,args):
         case = aoi.aoi_case(case, args.aoi)
     print( "I am done with AOI cropping")
     
-    log.info("I'm removing patches with NANs in them")
-    case = NAN.NANcase(case) 
-           
+    
     log.info("I'm creating mbands")
     mbands = [itm.replace('norm', '') for itm in args.Predictors if itm.startswith('M')]
     if mbands:
@@ -61,6 +59,6 @@ def main(args):
     log.info(f"I am now saving case with channels {list(case)}.")
     #log.info(f"channels is {case['channels']} and samples is {case['samples']}")
     savepath = args.npz_path[:-4]+ f"_I2M_ALL.npz"
-    np.savez(savepath, **case)
+    np.savez_compressed(savepath, **case)
     log.info("I saved the case")
     
