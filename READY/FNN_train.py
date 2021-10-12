@@ -15,9 +15,11 @@ from PIL import Image
 from sklearn.model_selection import train_test_split
 import time
 import aoi
+from common import log, rgb, reset, blue, orange, yellow, bold
 
-def write_channels(path, TAND, TORS):
+def write_channels(path, inputfile, TAND, TORS):
     with open (path, "w") as f:
+        print(inputfile, file =f)
         print(TAND, file = f)
         for p in TORS:
             print(p, file = f, end = " ")
@@ -39,6 +41,7 @@ def set_up(case, predictors, predictand):
     return train_test_split(TORS, TAND, test_size=ts, random_state=rs)
 
 ######THE MODEL######
+######THE MODEL######
 def create_model(n_input): ####options
     #number of inputs ( decided before here)
     #activation functions ('relu', 'sigmoid', 'tanh')
@@ -57,20 +60,16 @@ def create_model(n_input): ####options
     # Output layer:  just 1 node and no activation function
     model.add(layers.Dense(1, activation = 'sigmoid'))
     model.summary()
-    model.compile(optimizer=keras.optimizers.Adam(0.01),  # Adam optimizer
-                loss= 'mse',       # mean squared error
-               metrics=['mae','mse'])  # mean absolute error
+    model.compile(optimizer='adam',loss= 'mse', metrics=['mae','mse'])  # mean absolute error
     return model
 
 def FNN_train(args):
     print("im in FNN train and my args are", args)
     case = np.load(args.npz_path)
-    print("I loaded the case")
-    if args.aoi:
-        case = aoi.aoi_case(case, args.aoi)
-    print(" I am making the inputs")
+    log.info(f'I loaded the case')
+    log.info(f'I am making the inputs')
     TORS_train, TORS_test, TAND_train, TAND_test  = set_up(case, args.Predictors, args.DNB)
-    print("i am now making the model")
+    log.info(f'I am now making the model')
     n_input = len(args.Predictors)
     model = create_model(n_input)
                          
@@ -81,16 +80,16 @@ def FNN_train(args):
     bs = 1000
     history = model.fit(TORS_train, TAND_train,validation_data =(TORS_test,TAND_test), epochs=n_epochs, batch_size=bs)
 
-    print("I am now saving the model")
+    log.info(f'I am now saving the model')
     made =time.strftime("%Y-%m-%dT%H%M")
-    model.save(f'FNN_{made}')
+    model.save(f'FNN_{args.npz_path[:11]}_{made}')
 
     #save the history as a text file
     with open (f"myhistory_{made}", "w") as f:
         import pprint
         pprint.pprint(history.history, stream =f)
     #save the channels
-    write_channels(f"model_channels_{made}", args.DNB, args.Predictors)
-    print("done with model training")
+    write_channels(f"FNN_model_channels_{made}", args.npz_path, args.DNB, args.Predictors)
+    log.info(f'done with model training')
+  
     
-           

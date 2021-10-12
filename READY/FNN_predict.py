@@ -19,8 +19,8 @@ import FNN_train
 def read_channels(path):
     with open (path) as f:
         lines = f.readlines()
-        PREDICTAND = lines[0].strip()
-        PREDICTORS = lines[1].strip().split()
+        PREDICTAND = lines[1].strip()
+        PREDICTORS = lines[2].strip().split()
         return PREDICTORS, PREDICTAND
 
 def function(model, case, PREDICTORS, PREDICTAND):
@@ -47,6 +47,7 @@ def predict(args):
     print("i am in predict and args are ", args)
     case = np.load(args.npz_path)
     print("I loaded the case")
+    print("args.modelpath is", args.model_path)
     model = tf.keras.models.load_model(args.model_path)#
     print("I loaded the model")
     PREDICTORS, PREDICTAND = read_channels(args.channel_path)

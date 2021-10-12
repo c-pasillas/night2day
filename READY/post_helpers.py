@@ -11,6 +11,17 @@ from sklearn.metrics import r2_score
 from matplotlib import cm
 from matplotlib.colors import Normalize 
 from scipy.interpolate import interpn
+from common import log
+
+#ensurefigdir
+
+def ensure_outdir(models_path, npz_path, nick):
+    f = models_path / 'MLR' / f'{npz_path.parent.name}_{nick}'
+    f.mkdir(exist_ok=True, parents=True)
+    fig = f / 'FIGURES'
+    fig.mkdir(exist_ok=True, parents=True)
+    return f, fig
+
 
 #channel stats
 def basic_stats(dic, casename):
@@ -62,6 +73,55 @@ def basic_stats(dic, casename):
     
     #violin plots
     #plt.violinplot(cols, showextrema=False);
+    
+###basic historgram/PDFs of data ( maybe go in the same code above?)    
+    
+  #helper function for plotting histogram and PDFs #need to readjsut the inputs
+
+
+def plotdata(array1, array2, channel_name, figdir, nick):
+    Y1 = scaler.fit_transform(array1.reshape(-1,1))
+    Y2 = scaler.fit_transform(array2.reshape(-1,1))
+
+    #plotting basics
+    # set figure defaults
+    mpl.rcParams['figure.dpi'] = 150
+    plt.rcParams['figure.figsize'] = (10.0/2, 8.0/2)
+    xinc = 0.1
+    xbins = np.arange(-4, 4.2, xinc)
+
+    #histogram counts
+    plt.figure()
+    hY1 = np.histogram(Y1,xbins)
+    hY2 = np.histogram(Y2,xbins)
+
+    plt.xlabel('value')
+    plt.ylabel('counts')
+
+    plt.bar(hY1[1][:-1],hY1[0],edgecolor = 'r', color = [], width = .2, label = 'truth', linewidth = 2)
+    plt.bar(hY2[1][:-1],hY2[0],edgecolor = 'b', color = [], width = .2, label = 'MLR', linewidth = 2)
+   
+    plt.legend()
+    plt.title(channel_name + ' by count')
+    plt.savefig(figdir / f"fitted_{channel_name}_MLR_histogram.png")
+    #plt.show()
+    plt.close()
+    
+    #make as PDF value 1
+    plt.figure()
+    xvals = hY1[1][:-1]
+    fvalsY1 = hY1[0].astype(float)/(np.size(Y1)*xinc)
+    fvalsY2 = hY2[0].astype(float)/(np.size(Y2)*xinc)
+
+    plt.plot(xvals+xinc/2,fvalsY1,'r', label = 'truth')
+    plt.plot(xvals+xinc/2,fvalsY2,'b', label = 'MLR')
+    plt.xlabel('value')
+    plt.ylabel('frequency')
+    plt.title(channel_name + ' PDFs')
+    plt.legend()
+    plt.savefig(figdir / f"fitted_{channel_name}_MLR_PDF.png")
+    #plt.show()
+    plt.close()  
     
 def xy_relations(array1, array2):
     y_true = array1.flatten() #DNB
@@ -132,6 +192,7 @@ def scale(arr, percent_tail=2, percent_top=None, invert=False):
     left, right = int(sort_arr.size * left / 100), int(sort_arr.size * right / 100)
     #print(f'left={left} right={right}')
     lo, hi = sort_arr[left], sort_arr[-(1 + right)]
+    #print(lo, hi)
     byte_scale = 256 / (hi - lo)
     offset = 0 - lo * byte_scale
     #print(f'byte_scale={byte_scale:.2f} offset={offset:.2f}')
@@ -147,19 +208,35 @@ def mkIMG ():
 def draw_COLE(data_dic, name): 
     imagedir = mkIMG()
     # TORS9999 = np.nan_to_num(TORS, copy=True, nan=9999, posinf=None, neginf=None)
-    #
-    for i in range(0,10): #len(truth['latitude'])): #patches
-        print(f"starting patch {i}")
+    for i in range(len(data_dic['M12'])): #patches
+        print(f"starting COLe pics on patch {i}")
         for label in data_dic:
             image_array = data_dic[label][i]
             p = imagedir / f'{name}_{label}_{i}.png'
-            if label == "DNBdiff" or label == "DNB_normdiff":
-                plt.colorbar()
-                #plt.imsave(str(p), image_array, cmap = "seismic", vmin = -0.4, vmax = 0.4)  
-                plt.imshow(str(p), image_array, cmap = "seismic", vmin = -0.4, vmax = 0.4)  
-            else:
-                show_byte_img(scale(image_array), name = str(p))
-
+            show_byte_img(scale(image_array), name = str(p))
+                
+def colordiff(data_dic, name):
+    imagedir = mkIMG()
+    for i in range(len(data_dic['M12'])): #patches
+        print(f"starting DNBdiff on patch {i}")
+        for label in data_dic:
+            image_array = data_dic[label][i]
+            p = imagedir / f'{name}_HEATMAP_{label}_{i}.png'
+            if label == "DNB_raddiff":
+                fig = plt.figure(figsize =(6,5))
+                ax = fig.add_subplot(1,1,1,)
+                #vmin = -0.000000002, vmax = 0.000002,
+                im =ax.contourf(image_array, cmap = "seismic", extend='both')  
+                ax.set_title("value differences between ML radiances and DNB raw radiances", fontsize =14)
+                plt.colorbar(im)
+                fig.savefig(str(p), dpi =300, bbox_inches='tight')   
+            if label == "DNB_normdiff":
+                fig = plt.figure(figsize =(6,5))
+                ax = fig.add_subplot(1,1,1,)
+                im =ax.contourf(image_array, cmap = "seismic", extend='both')  
+                ax.set_title("value differences between ML normalized radiances and DNB FMN radiances", fontsize =14)
+                plt.colorbar(im)
+                fig.savefig(str(p), dpi =300, bbox_inches='tight') 
 
 # #hexbin instead of scatter plot
 def hex (x,y):
@@ -231,9 +308,10 @@ def ERF(array1, array2):
     print(x.shape, y.shape)
     
     #calculate basic relations for ERF values
+    print("calculating relations for ERF data")
     xy_relations(x.flatten(),y.flatten())
     
-    plotit(x,y)
+    #plotit(x,y)
     # plotting one image
 
     #img = x[0]
@@ -249,8 +327,8 @@ def ERF(array1, array2):
     #plt.show()
 #     %%
 
-def plotit():
-    for i in range(len(x)):
+def plotit(ERFimage_truth,ERFimage_ML):
+    for i in range(len(ERFimage_truth)):
         x=ERFimage_truth[i]
         y=ERFimage_ML[i]
         a=np.linspace(0,4000,100)

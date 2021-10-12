@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 import keras
 from matplotlib import pyplot as plt
+import numpy as np
 import gzip
 import math
 import tensorflow.keras.layers as layers

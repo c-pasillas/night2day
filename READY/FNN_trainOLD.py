@@ -16,6 +16,13 @@ from sklearn.model_selection import train_test_split
 import time
 import aoi
 
+def write_channels(path, TAND, TORS):
+    with open (path, "w") as f:
+        print(TAND, file = f)
+        for p in TORS:
+            print(p, file = f, end = " ")
+        print(file =f)
+
 def set_up(case, predictors, predictand):
     tors = np.stack([case[c] for c in predictors], axis = -1) #X in array
     tand = case[predictand] #y in array, 
@@ -54,3 +61,36 @@ def create_model(n_input): ####options
                 loss= 'mse',       # mean squared error
                metrics=['mae','mse'])  # mean absolute error
     return model
+
+def FNN_train(args):
+    print("im in FNN train and my args are", args)
+    case = np.load(args.npz_path)
+    print("I loaded the case")
+    if args.aoi:
+        case = aoi.aoi_case(case, args.aoi)
+    print(" I am making the inputs")
+    TORS_train, TORS_test, TAND_train, TAND_test  = set_up(case, args.Predictors, args.DNB)
+    print("i am now making the model")
+    n_input = len(args.Predictors)
+    model = create_model(n_input)
+                         
+    #history = model.fit(x, y, validation_split=0.30, epochs=n_epochs, batch_size=128)
+    # number of epochs to train 
+    n_epochs = 2
+    #batch size, # patches before update small=finer resolution/> time may get in a minumum, large < time may jump a minimum
+    bs = 1000
+    history = model.fit(TORS_train, TAND_train,validation_data =(TORS_test,TAND_test), epochs=n_epochs, batch_size=bs)
+
+    print("I am now saving the model")
+    made =time.strftime("%Y-%m-%dT%H%M")
+    model.save(f'FNN_{made}')
+
+    #save the history as a text file
+    with open (f"myhistory_{made}", "w") as f:
+        import pprint
+        pprint.pprint(history.history, stream =f)
+    #save the channels
+    write_channels(f"model_channels_{made}", args.DNB, args.Predictors)
+    print("done with model training")
+    
+           

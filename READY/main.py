@@ -31,12 +31,14 @@ import NANfill
 import I2M_patchnaoi
 import I2M_derive
 import I2M_all
-import MLR_train
+#import MLR_train
 import FNN_train
+#import FNN_train2
 #import FNN_train_I2M_all
 import FNN_retrain
 import FNN_predict
 import FNN_assess
+#import FNN_PnA
 
 #import normalize
 #import learning_prep
@@ -182,14 +184,14 @@ I2M_patchnaoi_p.add_argument('-q', '--quiet', action='count', default=0)
 I2M_patchnaoi_p.add_argument('npz_path', help='Path to npz file')
 I2M_patchnaoi_p.add_argument('--aoi', type=int, nargs=4, help='NSEW bounding box')
 
-I2M_derive_p = subparsers.add_parser('I2M-derive', help='Derive DNB, Mband and BTD')
+I2M_derive_p = subparsers.add_parser('I2M-assessprep', help='Derive DNB, Mband and BTD, keeps raw data')
 I2M_derive_p.set_defaults(func=I2M_derive.main)
 I2M_derive_p.add_argument('-q', '--quiet', action='count', default=0)
 I2M_derive_p.add_argument('npz_path', help='Path to npz file')
-I2M_derive_p.add_argument('nickname', help='Name to attach to output file name')
+#I2M_derive_p.add_argument('nickname', help='Name to attach to output file name')
 I2M_derive_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
 
-I2M_all_p = subparsers.add_parser('I2M-all', help='Does ALL I2M functions in the following order patch, AOI (if flagged), Derive both DNB, norms for the specific Mband and BTDs we set as Predictors')
+I2M_all_p = subparsers.add_parser('I2M-trainprep', help='USE THIS TO MAKE TRAINING DATA Does ALL I2M functions in the following order patch, AOI (if flagged), Derive both DNB, norms for the specific Mband and BTDs we set as Predictors ')
 I2M_all_p.set_defaults(func=I2M_all.main)
 I2M_all_p.add_argument('-q', '--quiet', action='count', default=0)
 I2M_all_p.add_argument('npz_path', help='Path to npz file')
@@ -198,22 +200,30 @@ I2M_all_p.add_argument('--Predictors', nargs="+", help='the predictors we are us
 
 
 ######### MLR steps
-MLR_p = subparsers.add_parser('MLR-train', help='Train a MLR SKL model from .npz data')
-MLR_p.set_defaults(func=MLR_train.MLR)
-MLR_p.add_argument('-q', '--quiet', action='count', default=0)
-MLR_p.add_argument('npz_path', help='Path to npz file')
-MLR_p.add_argument('models_path', help='Path to models directory')
-MLR_p.add_argument('nick', help='Name to create new folder structure')
+#MLR_p = subparsers.add_parser('MLR-train', help='Train a MLR SKL model from .npz data and provide ML output')
+#MLR_p.set_defaults(func=MLR_train.MLR)
+#MLR_p.add_argument('npz_path', help='Path to npz file')
+#MLR_p.add_argument('--DNB', help='the DNB truth we are using')
+#MLR_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
+#MLR_p.add_argument('-q', '--quiet', action='count', default=0)
 
 ######### FNN steps
 
 FNN_train_p = subparsers.add_parser('FNN-train', help='Train a FNN')
 FNN_train_p.set_defaults(func=FNN_train.FNN_train)
 FNN_train_p.add_argument('npz_path', help='Path to npz file')
-FNN_train_p.add_argument('--aoi', type=int, nargs=4, help='NSEW bounding box')
+#FNN_train_p.add_argument('--aoi', type=int, nargs=4, help='NSEW bounding box')
 FNN_train_p.add_argument('--DNB', help='the DNB truth we are using')
 FNN_train_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
 FNN_train_p.add_argument('-q', '--quiet', action='count', default=0)
+
+
+#FNN_train2_p = subparsers.add_parser('FNN-train2', help='Train a FNN')
+#FNN_train2_p.set_defaults(func=FNN_train2.FNN_train)
+#FNN_train2_p.add_argument('npz_path', help='Path to npz file')
+#FNN_train2_p.add_argument('--DNB', help='the DNB truth we are using')
+#FNN_train2_p.add_argument('--Predictors', nargs="+", help='the predictors we are using')
+#FNN_train2_p.add_argument('-q', '--quiet', action='count', default=0)
 
 #FNN_train_I2M_all_p = subparsers.add_parser('FNN-case-train', help='Train a FNN given a colocated only case file, will run I2M on it all')
 #FNN_train_I2M_all_p.set_defaults(func=FNN_train_I2M_all.maintrain)
@@ -239,11 +249,18 @@ FNN_predict_p.add_argument('-q', '--quiet', action='count', default=0)
                                       
 FNN_assess_p = subparsers.add_parser('FNN-assess', help='compare ML vs DNB values') # may become train only) 
 FNN_assess_p.set_defaults(func=FNN_assess.assessment)
-FNN_assess_p.add_argument('npz_path', help='Path to npz file with DNB')
+FNN_assess_p.add_argument('npz_path', help='Path to npz file with DNB and band raw values')
+#FNN_assess_p.add_argument('norm_path', help='Path to npz file with normed values')
 FNN_assess_p.add_argument('ML_path', help='Path to ML data')
 FNN_assess_p.add_argument('-q', '--quiet', action='count', default=0)   
 
 
+#FNN_PnA_p = subparsers.add_parser('FNN-PnA', help=' run predict and assess together with FNN') #may become predict only) 
+#FNN_PnA_p.set_defaults(func=FNN_PnA.both)
+#FNN_PnA_p.add_argument('npz_path', help='Path to npz file with channels')
+#FNN_PnA_p.add_argument('model_path', help='Path to Model folder')
+#FNN_PnA_p.add_argument('channel_path', help='Path to Model Channels')
+#FNN_PnA_p.add_argument('-q', '--quiet', action='count', default=0) 
 
 ####### old files ####### 
 #norm_p = subparsers.add_parser('normalize', help='Normalize and derive channels')

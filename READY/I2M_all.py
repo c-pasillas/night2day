@@ -62,3 +62,16 @@ def main(args):
     np.savez_compressed(savepath, **case)
     log.info("I saved the case")
     
+def main2(args):
+    case2 = np.load(args.npz_path)
+    log.info(f"I loaded the case and arguments are {args.npz_path}, {args.aoi}, {args.Predictors}") 
+    caseF = I2M_all(case, args)
+    log.info(f"I am now saving case with channels {list(case2)}.")
+    case2.close()
+    #log.info(f"channels is {case['channels']} and samples is {case['samples']}")
+    savepath = args.npz_path[:-4]+ f"_I2M_ALL.npz"
+    np.savez_compressed(savepath, **caseF)
+    log.info("I saved the case")
+       
+    
+    

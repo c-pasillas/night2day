@@ -12,6 +12,8 @@ from common import log
 #############
 def main(args):
     case = np.load(args.npz_path)
+    raws = {k: case[k] for k in ['M12', 'M13', 'M14', 'M15', 'M16', 'DNB']}
+ 
     log.info("I loaded the case") 
     
     log.info("I'm creating mbands")
@@ -33,10 +35,10 @@ def main(args):
     for b in Mband_norm.m_bands + ['DNB']:
         case.pop(b)
     case['channels'] = [c for c in case if c not in ['channels', 'samples']]
-    
+    case['channels'].extend (list(raws))
     log.info(f"I am now saving case with channels {list(case)}.")
     #log.info(f"channels is {case['channels']} and samples is {case['samples']}")
-    savepath = args.npz_path[:-4]+ f"_{args.nickname}.npz"
-    np.savez(savepath, **case)
+    savepath = args.npz_path[:-4]+ f"_NBD.npz"
+    np.savez(savepath,**raws, **case)
     log.info("I saved the case")
     
