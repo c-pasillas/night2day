@@ -43,6 +43,7 @@ def aoi_case(case,nsew):
         in_aoi_case[c] =x
     
     in_aoi_case['channels'] = case['channels']
+    in_aoi_case['aoi'] = [f'{NSEW}']
     log.info(f'done stacking the patches')
     return in_aoi_case
 

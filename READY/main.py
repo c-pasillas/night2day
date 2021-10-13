@@ -12,6 +12,8 @@ import tensorflow as tf
 import common
 from common import log, bold, reset, color, rgb, blue
 
+
+import info
 import aoi
 #import crop
 #import combine_case
@@ -95,6 +97,14 @@ subparsers = parser.add_subparsers()
 msg = (f'Pack a case into a single array',
        '''Process and pack a case into a single array.
        Matches time-correlated images, regularizes dimensions across all images.''')
+
+
+######high level
+info_p = subparsers.add_parser('info', help=' gives npz file summary info') 
+info_p.set_defaults(func=info.main)
+info_p.add_argument('npz_path', help='Path to npz file')
+info_p.add_argument('-q', '--quiet', action='count', default=0)
+
 ##### PACKCASES######
 #VIIRS_pack_case_p = subparsers.add_parser('VIIRS-pack-case', help=msg[0], description=msg[1])
 #VIIRS_pack_case_p.set_defaults(func=VIIRS_pack_case.pack_case)
