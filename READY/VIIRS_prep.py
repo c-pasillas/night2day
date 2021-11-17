@@ -3,8 +3,8 @@ import numpy as np
 import gzip
 import math
 import pathlib
-import VIIRS_btd
-import Mband_norm
+import btd
+import band_norm
 import DNB_norm    
     
     
@@ -14,9 +14,9 @@ def prep(args):
     print("I loaded the case")
     case = np.load(args.npz_path)
     print ("Starting BTD calcs")
-    case = VIIRS_btd.btd_case(case)
+    case = btd.btd_case(case)
     print("starting Mband Norm")
-    case = Mband_norm.mband_case(case)
+    case = band_norm.band_case(case)
     print("starting DNB norm")
     case = DNB_norm.DNBnorm_case (case)
     savepath = args.npz_path[:-4]+ "_FINAL_FULL.npz"

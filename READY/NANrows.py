@@ -19,14 +19,14 @@ def remove_nans(case):
     IDX = [i for i in range(len(case_4D)) if not has_many_nans(case_4D[i],i)] 
     print(f"im in remove nans and we have kept {len(IDX)}/{len(case_4D)} files")
     new_case_4D = case_4D[IDX]
-    new_case_4D = np.nan_to_num(new_case_4D, copy=False, nan=0)#TODO better nan policy?
+    new_case_4D = np.nan_to_num(new_case_4D, copy=False, nan=0)
     new_samples = np.array(case['samples'])[IDX]
     nanned = {"samples": new_samples, "channels": channels}
     print("reassembling the case")
     for i in range (case_4D.shape[-1]):
         #remaking my dic of 3 D arrays channels[i] is the "DNB, M12" etc then fills with the array for the data
         nanned[channels[i]] = new_case_4D[:,:,:,i] 
-    return nanned
+    return nanned # this returns a set with no NAN rows
 
 
 def keep_nans(case):

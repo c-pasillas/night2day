@@ -7,12 +7,15 @@ import common
 from common import log, reset, blue, yellow, orange, bold
 
 
-DNB_bounds = {'night': [2e-10, 3e-7],
+DNB_bounds = {'sensor' : [3e-5, 2e-2],
+              'night': [2e-10, 3e-7],
               'full_moon': [1.26e-10, 1e-7],  # curtis
               'new_moon': [2e-11, 1e-9],
               'Miller_full_moon': [-9.5, -8.0]}
 
 DNB_consts = {
+     'DNB_SEN_norm': DNB_bounds['sensor'],
+     'DNB_log_SEN_norm': np.log10(DNB_bounds['sensor']),
      'DNB_norm': DNB_bounds['night'],
      'DNB_FMN': DNB_bounds['full_moon'],
      'DNB_NMN': DNB_bounds['new_moon'],
@@ -52,13 +55,17 @@ def dnb_derive(dnb_arr):
     DNB normalization formula to the adjusted array data, or the log of it, with appropriate constants."""
     adj = dnb_arr
     ladj = np.log10(adj)
-    r = {#'DNBfix': adj,
-         #'DNB_norm': formula(adj, DNB_bounds['night']),
-         'DNB_FMN': formula(adj, DNB_bounds['full_moon']),
+    r = {     #'DNB_SEN_norm' :formula(adj, DNB_bounds['sensor']),
+    #'DNB_log_SEN_norm' : formula(ladj, np.log10(DNB_bounds['sensor'],
+        
+         
+         #'DNBfix': adj,
+         'DNB_norm': formula(adj, DNB_bounds['night']),
+         #'DNB_FMN': formula(adj, DNB_bounds['full_moon']),
          # 'DNB_NMN': formula(adj, DNB_bounds['new_moon']),
          #'DNB_log_norm': formula(ladj, np.log10(DNB_bounds['night'])),
-         'DNB_log_FMN': formula(ladj, np.log10(DNB_bounds['full_moon'])),
-         # 'DNB_log_NMN': formula(ladj, np.log10(DNB_bounds['new_moon'])),
+         #'DNB_log_FMN': formula(ladj, np.log10(DNB_bounds['full_moon'])),
+          'DNB_log_NMN': formula(ladj, np.log10(DNB_bounds['new_moon'])),
          #'DNB_log_Miller_full_moon': formula(ladj, DNB_bounds['Miller_full_moon'])
     }
     return r
@@ -82,5 +89,5 @@ def DNBnorm(args):
     DNB_norm = DNB_norms(case)
     print("I am now saving case")
     savepath = args.npz_path[:-4]+ "_DNBnorm.npz"
-    np.savez(savepath,**DNB_norm)        
+    np.savez_compressed(savepath,**DNB_norm)        
         

@@ -150,7 +150,7 @@ def normalize(args):
     show_stats(norm)
     norm_file = path.parent / (path.name[:-4] + '_normalized.npz')
     log.info(f'Writing {blue}{norm_file.name}{reset}')
-    np.savez(norm_file, **norm)
+    np.savez_compressed(norm_file, **norm)
     log.info(f'Wrote {blue}{norm_file.name}{reset}')
 
 

@@ -1,5 +1,5 @@
 #attempt to run model from already saved TORS/TANDS
-
+#FNN retrain
 #import statements
 import numpy as np
 import tensorflow as tf

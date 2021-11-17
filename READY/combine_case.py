@@ -19,12 +19,11 @@ def same_channels(cases):
     arr_channels = sorted(list(commonsets)) 
     meta_channels = [ch for ch in cases[0].files if ch not in cases[0]['channels']]
     print(f"array channels is {arr_channels} and meta channels are {meta_channels}")
-    return arr_channels, meta_channels
-    
-        
+    return arr_channels, meta_channels        
 
 def flatten(lists):
     return [x for l in lists for x in l]
+
 def combine_cases(cases):
     shapes = [case['latitude'].shape[1:] for case in cases]
     log.info(f'shapes are {shapes}')
@@ -41,4 +40,13 @@ def combine_cases(cases):
     metas['channels'] = cases[0]['channels']
     comb = {**ubercase, **metas}
     return comb
+
+
+def main(args):
+    log.info(f'Starting combine cases')
+    output = combine_cases([np.load(p) for p in args.npz_path])
+    log.info(f'Writing {blue}{args.outputname}.npz{reset}')
+    np.savez_compressed(args.outputname, **output)
+    log.info(f'Wrote {blue}{args.outputname}.npz{reset}')
+
 

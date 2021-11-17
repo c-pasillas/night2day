@@ -27,7 +27,7 @@ def aoi_case(case,nsew):
     global NSEW
     NSEW = nsew
     if NSEW[0] == NSEW[1] == NSEW[2] == NSEW[3] == 0:
-        NSEW = 45, -5, -105, 105
+        NSEW = 50, 25, -130, 180
     log.info(f"Filtering images based on AOI {NSEW}")
     a_patches = range(len(case['latitude']))
     aoi_patches = filter_patches(a_patches, case['latitude'], case['longitude'])
@@ -47,16 +47,41 @@ def aoi_case(case,nsew):
     log.info(f'done stacking the patches')
     return in_aoi_case
 
+def aoi_by_pixel(case, nsew): #goes pixel by pixel and only saves the pixels in the AOI
+    global NSEW
+    NSEW = nsew
+    if NSEW[0] == NSEW[1] == NSEW[2] == NSEW[3] == 0:
+        NSEW = 50, 25, -130, 180
+    log.info(f"Filtering pixels based on AOI {NSEW}")
+    lat= case['latitude'].flatten()
+    long = case['longitude'].flatten()
+    channels_to_filter = list(case['channels'])
+    keep_points = [idx for idx in range(len(lat)) if is_point_in_box(lat[idx],long[idx])]
+    pixels_in_aoi = {}
+    for c in channels_to_filter:
+        print("starting channel", c)
+        x = case[c].flatten()[keep_points]
+        pixels_in_aoi[c] =x
+    pixels_in_aoi['channels'] = case['channels']
+    pixels_in_aoi['aoi'] = [f'{NSEW}']
+    log.info(f'done stacking the pixel channels')
+    
+    #flat_reflect = case['SM_reflectance'].flatten()
+    #img_array = np.zeros(len(flat_reflect))
+    #img_array[keep_points] = flat_reflect[keep_points]
+    #img_array = img_array.reshape(case['SM_reflectance'].shape)
+    
+    return pixels_in_aoi#,img_array
+    
 def aoi(args):
     path = Path(args.npz_path).resolve()
-    #if want to rename to include the AOI specified
-    out_name = args.name if '.npz' in args.name else args.name + '.npz'
     f = np.load(path)
-    g = aoi_case(f, args.NSEW)
-    out_path = path.parent / out_name
-    #log.info(f'Writing {blue}{out_path.name}{reset}')
-    #np.savez(out_path, **g)
-    savepath = args.npz_path[:-4]+ f"_aoi.npz"
-    np.savez(savepath, **g)
+    if args.pixel:
+        g = aoi_by_pixel(f, args.NSEW)
+        savepath = args.npz_path[:-4]+ f"_aoi_pixel_{NSEW[0]}_{NSEW[1]}_{NSEW[2]}_{NSEW[3]}.npz" 
+    else:
+        g = aoi_case(f, args.NSEW)
+        savepath = args.npz_path[:-4]+ f"_aoi_{NSEW[0]}_{NSEW[1]}_{NSEW[2]}_{NSEW[3]}.npz"
+    np.savez_compressed(savepath, **g)
     log.info(f'Wrote {blue}{savepath}{reset}')
 

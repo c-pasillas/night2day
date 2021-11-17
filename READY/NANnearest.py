@@ -72,4 +72,4 @@ def NAN(args):
     nan_nearest = remove_nans(case)
     print("I am now saving case")
     savepath = args.npz_path[:-4]+ "_nearestNAN.npz"
-    np.savez(savepath,**nana_nearest )
+    np.savez_compressed(savepath,**nana_nearest )

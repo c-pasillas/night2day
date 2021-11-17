@@ -77,7 +77,7 @@ def NAN9999(args):
     n9999 = remove_9999s(case)
     print("I am now saving case")
     savepath = args.npz_path[:-4] + "_NANis9999.npz"
-    np.savez(savepath,**n9999 )
+    np.savez_compressed(savepath,**n9999 )
 
 def NANcase(case):
     newcase = remove_nans(case)
@@ -97,4 +97,4 @@ def NAN(args):
     print("I am now saving case")
     
     savepath = args.npz_path[:-4] + end
-    np.savez(savepath,**nanned )
+    np.savez_compressed(savepath,**nanned )

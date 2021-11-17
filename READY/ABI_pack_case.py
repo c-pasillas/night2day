@@ -187,6 +187,7 @@ def pack_case(args):
     """
 
     paired = pair_h5s_with_ncs(h5s, nc_dict)
+    print(paired)
     paired_sorted = sorted(paired, key=lambda h5_ncs: h5_ncs[0]['start'])
     for h5, nc_list in paired_sorted:
         print(f'{bold}{h5["start"]} -> {h5["end"]}{reset}')
@@ -201,7 +202,8 @@ def pack_case(args):
             print(f'{nc["filename"]}')
         print()
 
-    files = [processed_file(pairs[datetime], col, idx, len(pairs)) for idx, datetime in enumerate(sorted(pairs))]
+    print(paired_sorted)
+    files = [processed_file(paired[datetime], col, idx, len(paired)) for idx, datetime in enumerate(paired_sorted)]
     npzs = [np.load(f) for f in files]
     min_rows, min_cols = ft.reduce(pairwise_min, [x['DNB'].shape for x in npzs])
     channels = npzs[0]['channels']

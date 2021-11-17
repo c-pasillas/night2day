@@ -54,6 +54,6 @@ def NANfill(args):
     fillcase = fillit(case)
     print("I am now saving case")
     savepath = args.npz_path[:-4] + "_filledNAN.npz"
-    np.savez(savepath,**fillcase )
+    np.savez_compressed(savepath,**fillcase )
     
        

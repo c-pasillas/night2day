@@ -1,5 +1,5 @@
 #attempt to run model
-
+#FNNtrain
 #import statements
 import numpy as np
 import tensorflow as tf
@@ -17,28 +17,38 @@ import time
 import aoi
 from common import log, rgb, reset, blue, orange, yellow, bold
 
-def write_channels(path, inputfile, TAND, TORS):
+def write_channels(path, inputfile, PREDICTORS, PREDICTAND):
     with open (path, "w") as f:
         print(inputfile, file =f)
-        print(TAND, file = f)
-        for p in TORS:
+        print(PREDICTAND[0], file = f)
+        for p in PREDICTORS:
             print(p, file = f, end = " ")
+        #for p in TORS:
+         #   print(p, file = f, end = "\n")   
         print(file =f)
 
-def set_up(case, predictors, predictand):
-    tors = np.stack([case[c] for c in predictors], axis = -1) #X in array
-    tand = case[predictand] #y in array, 
-
-    TORS = tors.reshape(-1, len(predictors))
+def set_up(case, PREDICTORS):
+    tors = np.stack([case[c] for c in PREDICTORS], axis = -1) #X in array
+    tand = case['SM_reflectance'] #y in array, 
+    tand =  (np.clip(tand, 0, 100)) / 100 #adjsutes for any over 100% reflectance (ie  city lights) and also makes 0-1 vs 0-100
+    
+    TORS = tors.reshape(-1, len(PREDICTORS))
     TAND = tand.flatten()
-
+    #print("tands are", tand(:,0:10))
+    #print("tors are", tors(:,0:10,:))
+    #print("TORS are" + TORS(:,0:10))
+    #print("TANDS are" + TAND(:,0:10))
+    print(TORS.shape)
+    print(TAND.shape)
     #split the data to test train
     #training split
     ts = 0.2
     #random seed
     rs = 10
     
-    return train_test_split(TORS, TAND, test_size=ts, random_state=rs)
+    return(TORS, TAND,ts, rs)
+    #return train_test_split(TORS, TAND, test_size=ts, random_state=rs)
+
 
 ######THE MODEL######
 ######THE MODEL######
@@ -50,7 +60,7 @@ def create_model(n_input): ####options
     # number of hidden layers
 
     # number of nodes per layer (if same one), can make different for each later
-    n_units =4 
+    n_units =2 
 
     model = tf.keras.Sequential()
     # First hidden layer:
@@ -61,6 +71,11 @@ def create_model(n_input): ####options
     model.add(layers.Dense(1, activation = 'sigmoid'))
     model.summary()
     model.compile(optimizer='adam',loss= 'mse', metrics=['mae','mse'])  # mean absolute error
+    
+    #model.compile(optimizer=keras.optimizers.Adam(0.01),  # Adam optimizer
+     #           loss= 'mse',       # mean squared error
+      #         metrics=['mae','mse'])  # mean absolute error
+    
     return model
 
 def FNN_train(args):
@@ -68,14 +83,27 @@ def FNN_train(args):
     case = np.load(args.npz_path)
     log.info(f'I loaded the case')
     log.info(f'I am making the inputs')
-    TORS_train, TORS_test, TAND_train, TAND_test  = set_up(case, args.Predictors, args.DNB)
+    all_predictors = ['M13norm', 'M14norm', 'M15norm', 'M16norm', 'C07norm', 'C11norm', 'C13norm', 'C15norm', 'normBTD_M13M14', 'normBTD_M13M15', 'normBTD_M13M16', 'normBTD_M14M15', 'normBTD_M14M16', 'normBTD_M15M16', 'normBTD_C07C11', 'normBTD_C07C13', 'normBTD_C07C15', 'normBTD_C11C13', 'normBTD_C11C15', 'normBTD_C13C15']
+    
+    if args.Predictors:
+        PREDICTORS = args.Predictors
+        n_input = len(args.Predictors)
+    else:
+        PREDICTORS =[b for b in all_predictors if b in case]
+        n_input = len(PREDICTORS)
+        print("n_inputs is ", n_input, PREDICTORS) #hardcoded need to fix
+    PREDICTAND = ['SM_reflectance']
+    print("my predictand is", PREDICTAND)
+    print("my predictors are", PREDICTORS)
+    TORS, TAND, ts, rs = set_up(case, PREDICTORS)
+    print("i am starting train_test_split")
+    TORS_train, TORS_test, TAND_train, TAND_test  = train_test_split(TORS, TAND, test_size=ts, random_state=rs)
     log.info(f'I am now making the model')
-    n_input = len(args.Predictors)
     model = create_model(n_input)
                          
     #history = model.fit(x, y, validation_split=0.30, epochs=n_epochs, batch_size=128)
     # number of epochs to train 
-    n_epochs = 2
+    n_epochs = 1
     #batch size, # patches before update small=finer resolution/> time may get in a minumum, large < time may jump a minimum
     bs = 1000
     history = model.fit(TORS_train, TAND_train,validation_data =(TORS_test,TAND_test), epochs=n_epochs, batch_size=bs)
@@ -83,13 +111,19 @@ def FNN_train(args):
     log.info(f'I am now saving the model')
     made =time.strftime("%Y-%m-%dT%H%M")
     model.save(f'FNN_{args.npz_path[:11]}_{made}')
+    log.info(f'I saved the model')
 
     #save the history as a text file
+    log.info(f' i am saving the history as a text file')
     with open (f"myhistory_{made}", "w") as f:
         import pprint
         pprint.pprint(history.history, stream =f)
     #save the channels
-    write_channels(f"FNN_model_channels_{made}", args.npz_path, args.DNB, args.Predictors)
+    log.info(f' i am saving the channels')
+    write_channels(f"FNN_model_channels_{made}", args.npz_path, PREDICTORS, PREDICTAND)
+    log.info(f' i am saving the tors/tands for retrain')
+    savepath = args.npz_path[:-4]+ f"TORS_TAND.npz"
+    np.savez_compressed(savepath, TORS, TAND)
     log.info(f'done with model training')
   
     

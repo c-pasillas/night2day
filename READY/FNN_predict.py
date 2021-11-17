@@ -24,7 +24,6 @@ def read_channels(path):
         return PREDICTORS, PREDICTAND
 
 def function(model, case, PREDICTORS, PREDICTAND):
-    
     tors = np.stack([case[c] for c in PREDICTORS], axis = -1) #X in array
     tand = case[PREDICTAND] #y in array, 
 
@@ -51,6 +50,8 @@ def predict(args):
     model = tf.keras.models.load_model(args.model_path)#
     print("I loaded the model")
     PREDICTORS, PREDICTAND = read_channels(args.channel_path)
+    print("my predictand is", PREDICTAND)
+    print("my predictors are", PREDICTORS)
     print("I loaded the channels list")
     MLvalues = function(model, case, PREDICTORS, PREDICTAND)
     print("I am now saving ML values")
@@ -58,5 +59,5 @@ def predict(args):
     made =time.strftime("%Y-%m-%dT%H%M")     
     #TODO make this a folder path resovled
     savepath = args.npz_path[:9]+ f"_MLtruth_{made}.npz"
-    np.savez(savepath, MLtruth = MLvalues, channel = [PREDICTAND])
+    np.savez_compressed(savepath, MLtruth = MLvalues, channel = [PREDICTAND])
 

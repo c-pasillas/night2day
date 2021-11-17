@@ -24,7 +24,7 @@ def patchnaoi(args):
         print( "I am done with AOI cropping")      
     print("I am now saving case")
     savepath = args.npz_path[:-4]+ "_I2M_PNA.npz"
-    np.savez(savepath,**case)
+    np.savez_compressed(savepath,**case)
     print("I saved the case")
     
     

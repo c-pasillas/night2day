@@ -6,13 +6,14 @@ from satpy import Scene
 import common
 from common import log, rgb, reset, blue, orange, bold
 
-all_channels = ['DNB', 'M12', 'M13', 'M14', 'M15', 'M16']
+all_channels = ['DNB', 'M13', 'M14', 'M15', 'M16']
 lat_long_both = ['dnb_latitude', 'dnb_longitude', 'm_latitude', 'm_longitude']
 lat_long = ['latitude', 'longitude']
 
 def nan_count(row):
-    ct = sum(1 for _ in it.takewhile(np.isnan, row))
-    return ct if ct < len(row) / 2 else 0
+    #ct = sum(1 for _ in it.takewhile(np.isnan, row))
+    #return ct if ct < len(row) / 2 else 0
+    return 0
 def pairwise_max(n, m):
     return max(n[0], m[0]), max(n[1], m[1])
 def pairwise_min(n, m):
@@ -24,19 +25,22 @@ def nan_edges(rows):
     counts = ((nan_count(r), nan_count(r[::-1])) for r in rows)
     return ft.reduce(pairwise_max, counts)
 
-def arrays_and_edges(scn: Scene):
+def arrays_and_edges(scn: Scene, channels_crop):
     """Given a colocated scene, gather longitude and latitude arrays and
     sensor arrays. And return the maximum NaN edges found in each channel."""
-    ae = [(arr, nan_edges(arr)) for arr in (scn[c].values for c in all_channels)]
-    arrs = [scn[c].values for c in lat_long_both[:2]] + [a[0] for a in ae]
-    return arrs, [a[1] for a in ae]
+    return [nan_edges(arr) for arr in (scn[c].values for c in channels_crop)]
 
-def crop_nan_edges(scn: Scene):
+def crop_nan_edges(scn: Scene, channels_crop = None, channels_keep = None):
     """Using the maximum NaN edges found across all sensor channels,
     crop all channels to eliminate NaN edges. Return a dict mapping the
     channel names to the numpy arrays."""
-    arrs, edges = arrays_and_edges(scn)
+    if channels_crop is None:
+        channels_crop = all_channels
+    if channels_keep is None:
+        channels_keep = channels_crop
+    edges = arrays_and_edges(scn, channels_crop)
     front, back = ft.reduce(pairwise_max, edges)
-    till = arrs[0].shape[-1] - back
-    return {name: arr[:, front:till] for name, arr in zip(lat_long + all_channels, arrs)}
+    arrs = [scn[c].values for c in (lat_long_both[:2] + list(channels_keep))]
+    till = arrs[0].shape[-1] - back 
+    return {name: arr[:, front:till] for name, arr in zip(lat_long + channels_keep, arrs)}
 

@@ -82,6 +82,6 @@ def patchcase(case):
 def patch(args):
     case = np.load(args.npz_path)
     patched = patch_case(case, args.PATCHSIZE)
-    savepath = args.npz_path[:-4]+ "_PATCHED.npz"
-    np.savez(savepath,**patched )
+    savepath = args.npz_path[:-4]+ "_PATCHED_ " + args.PATCHSIZE + ".npz"
+    np.savez_compressed(savepath,**patched )
     
