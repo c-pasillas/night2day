@@ -7,11 +7,12 @@ import common
 from common import log, reset, blue, yellow, orange, bold
 
 
-m_bands = ['M12','M13', 'M14', 'M15', 'M16']
+m_bands = ['M13', 'M14', 'M15', 'M16']
 trio_mband = ['M13', 'M14', 'M15', 'M16']
-c_bands = ['C07', 'C11', 'C13', 'C15']
+c_bands = ['C07', 'C11', 'C13', 'C14', 'C15']
+b_bands = ['B07', 'B11', 'B13', 'B14', 'B15']
 
-
+# double check the B max/mins
 bounds = {'M12': [230, 353],
           'M13': [230, 634],
           'M14': [190, 336],
@@ -20,7 +21,14 @@ bounds = {'M12': [230, 353],
           'C07': [230, 634],
           'C11': [190, 336],
           'C13': [190, 343],
-          'C15': [190, 340]}
+          'C14': [190, 343],
+          'C15': [190, 340],
+          'B07': [230, 634],
+          'B11': [190, 336],
+          'B13': [190, 343],
+          'B14': [190, 343],
+          'B15': [190, 340],
+          }
 
 def btd_and_norm(arr1, arr2, band1, band2):
     """Given two channels (band name and array data for each),
@@ -44,11 +52,15 @@ def all_btd_norms(case, onlythese = None):
     Gather up all btd channels in a dictionary to return."""
     present_mbands = [b for b in m_bands if b in case]
     present_cbands = [b for b in c_bands if b in case]
+    present_bbands = [b for b in b_bands if b in case]
+    
     mpairs = list(filter(lambda pair: pair[0] < pair[1],
                             it.product(present_mbands, present_mbands)))
     cpairs = list(filter(lambda pair: pair[0] < pair[1],
                             it.product(present_cbands, present_cbands)))
-    pairs = mpairs + cpairs
+    bpairs = list(filter(lambda pair: pair[0] < pair[1],
+                            it.product(present_bbands, present_bbands)))
+    pairs = mpairs + cpairs+bpairs
     ##TODO use only these pairs
     
     btds = [btd_and_norm(case[b1], case[b2], b1, b2) for b1, b2 in pairs]

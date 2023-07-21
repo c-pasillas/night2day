@@ -76,6 +76,7 @@ def aoi_by_pixel(case, nsew): #goes pixel by pixel and only saves the pixels in 
 def aoi(args):
     path = Path(args.npz_path).resolve()
     f = np.load(path)
+    print(f)
     if args.pixel:
         g = aoi_by_pixel(f, args.NSEW)
         savepath = args.npz_path[:-4]+ f"_aoi_pixel_{NSEW[0]}_{NSEW[1]}_{NSEW[2]}_{NSEW[3]}.npz" 

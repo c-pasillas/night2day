@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 from common import log, rgb, reset, blue, orange, yellow, bold
 
-#puttign this work on standyby because its only needed for end data.  we want ot test to see if modekfit breaks w some nans or just leaves the nans there or interpolates.  The answer to this determines IF we need ot go back and work on this situation or not
+#putting this work on stand by because its only needed for end data.  we want to test to see if model fit breaks w some nans or just leaves the nans there or interpolates.  The answer to this determines IF we need ot go back and work on this situation or not
 
 def count_nan(array):
     return np.sum(np.isnan(array))

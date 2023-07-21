@@ -7,7 +7,8 @@ import common
 from common import log, reset, blue, yellow, orange, bold
 
 m_bands = ['M12', 'M13', 'M14', 'M15', 'M16']
-c_bands = ['C07', 'C11', 'C13', 'C15']
+c_bands = ['C07', 'C11', 'C13', 'C14', 'C15']
+b_bands = ['B07', 'B11', 'B13', 'B14', 'B15']
 
 bounds = {'M12': [230, 353],
           'M13': [230, 634],
@@ -17,7 +18,13 @@ bounds = {'M12': [230, 353],
           'C07': [230, 634],
           'C11': [190, 336],
           'C13': [190, 343],
-          'C15': [190, 340] }
+          'C14': [190, 343],
+          'C15': [190, 340],
+          'B07': [230, 634],
+          'B11': [190, 336],
+          'B13': [190, 343],
+          'B14': [190, 343],
+          'B15': [190, 340]}
 
 def normalize_band(arr, band):
     """Given the array data and the name of the band,

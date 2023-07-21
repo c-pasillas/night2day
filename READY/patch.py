@@ -25,7 +25,7 @@ def as_array(patches):
     that they can be stored in a numpy array and saved for later."""
     return np.array([(sample, x.start, x.stop, y.start, y.stop) for sample, x, y in patches])
 
-def mypatch(case, patchdims=256):
+def mypatch(case, patchdims=512):
     shape = case['latitude'].shape
     channels = case['channels'] 
     varnum = len(channels)#number of variables
@@ -54,10 +54,9 @@ def mypatch(case, patchdims=256):
     array_data = {"PATCH_ID": patch_id}
     for i in range (varnum):
         array_data[channels[i]] = PATCHED[:,:,:,i]     
-    
     return array_data
     
-def patch_case(case, patch_size=256):
+def patch_case(case, patch_size=512):
     shape = case['latitude'].shape
     a_patches = all_patches(shape[0], shape[1], shape[2], patch_size)
     arr_channels = case['channels']
@@ -82,6 +81,8 @@ def patchcase(case):
 def patch(args):
     case = np.load(args.npz_path)
     patched = patch_case(case, args.PATCHSIZE)
-    savepath = args.npz_path[:-4]+ "_PATCHED_ " + args.PATCHSIZE + ".npz"
+    savepath = args.npz_path[:-4]+ "_PATCHED_" + str(args.PATCHSIZE) + ".npz"
+    print("I am saving the case")
     np.savez_compressed(savepath,**patched )
+    print(" I have saved the case as" + savepath)
     

@@ -12,55 +12,71 @@ import pandas as pd
 import IPython.display as dis
 from PIL import Image
 import post_helpers as ph
-import DNB_norm
 import pathlib
 
 
 def load_data(truth, ML):
-    #assign variables #may need to also do the original channels here since plan to compare to them visually
-    M12 = truth["M12"]
-    M13 = truth["M13"]
-    M14 = truth["M14"]
-    M15 = truth["M15"]
-    M16 = truth["M16"]
-    DNB = truth['DNB']
-    DNB_FMN = truth['DNB_FMN']
-    DNB_logFMN = truth['DNB_log_FMN']
+    #assign variables
+    SM_REFLECTANCE = truth['SM_reflectance']
+    ML_REFLECTANCE = ML['MLtruth']
+    REFLECT_DIFF = SM_REFLECTANCE - ML_REFLECTANCE
+    
+    #need to also add the actuall raw channels for the channel images
+    
     normML = ML['MLtruth']
     PREDICTAND_LABEL = ML["channel"][0]
-    print("i am reverting the ML values")
-    DNB_ML = DNB_norm.denormalize(PREDICTAND_LABEL, normML)
-
-    DNBnorm_diff = DNB_FMN - normML
-    DNBrad_diff = DNB - DNB_ML
-    x = DNB
-    y = DNB_ML
+    #Reflect_diff
+    
+    x = SM_REFLECTANCE
+    x_clip = (np.clip(x, 0, 100)) / 100
+    y = ML_REFLECTANCE
+    fixdiff = x_clip - y
     print('done with load-data')
-    return {"M12": M12, "M13": M13, "M14": M14, "M15": M15, "M16": M16, "DNB": DNB, "DNB_FMN": DNB_FMN, "DNB_logFMN": DNB_logFMN, "normML": normML, "DNB_raddiff": DNBrad_diff, "DNB_normdiff": DNBnorm_diff, "x": DNB, "y": DNB_ML}
+    return {"x": SM_REFLECTANCE, "x_clip": x_clip, "y": ML_REFLECTANCE, "fixdiff":fixdiff} #, "M13": M13, "M14": M14, "M15": M15, "M16": M16,  }
+    
+    
+    
+    
     
 def run_stats(data_dic, name):   
     # basic stats
     print("starting basic stats")
     ph.basic_stats(data_dic, name)
     
-    print("starting xy relations for normalized data")
-    ph.xy_relations(data_dic["DNB_FMN"],data_dic["normML"])
-    print("starting xy relations for radiances")
+    print("starting xy relations for Reflectances")
     ph.xy_relations(data_dic["x"],data_dic["y"])
+   
+    print("starting xy relations for clipReflectances")
+    ph.xy_relations(data_dic["x_clip"],data_dic["y"])
     
-    print("draw cole")
-    ph.draw_COLE(data_dic, name)
+    print("making the PDFs")
+    ph.plotdata(data_dic['x_clip'], data_dic['y'])#, channel_name, figdir, nick):
     
-    print("making value diff plots")
-    ph.colordiff(data_dic, name)
+    #print("i am making plots")
+    #ph.plotit(data_dic["x_clip"],data_dic["y"])
+    #ph.plotit(data_dic["x_clip"][0:5],data_dic["y"][0:5])
+    #print("draw cole")
+    #ph.draw_COLE(data_dic, name)
     
-    print("making hexplot")
-    ph.hex(data_dic["x"], data_dic["y"])
+    #print("making value diff plots")
+    #ph.colordiff(data_dic, name)
+ 
+    #print("making the PDFs")
+    #ph.plotdata(data_dic['x_clip'], data_dic['y'])#, channel_name, figdir, nick):
+    
+    print("making x clip hexplot")
+    ph.hex_plt(data_dic["x_clip"], data_dic["y"])
+    
+    print("making x clip hexyplot")
+    ph.hexy_plt(data_dic["x_clip"], data_dic["y"])
+    
+    #print("making the PDFs")
+    #ph.plotdata(data_dic['x_clip'], data_dic['y'])#, channel_name, figdir, nick):
     
     #print('making density scatter plot")
     #ph.density_scatter( data_dic['x'],  data_dic['y'], bins = [30,30] )
-    print("making ERF plats and calcs")
-    ph.ERF(data_dic["x"],data_dic["y"])
+    #print("making ERF plots and calcs")
+    #ph.ERF(data_dic["x"],data_dic["y"])
 
 
 #############

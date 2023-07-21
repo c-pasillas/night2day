@@ -31,8 +31,8 @@ def write_channels(path, inputfile, PREDICTORS, PREDICTAND, n_epocs, bs):
 
 def set_up(case, PREDICTORS):
     tors = np.stack([case[c] for c in PREDICTORS], axis = -1) #X in array
-    tand = case['SM_reflectance']#y in array, 
-    #tand = case['SM_Reflectance']
+    #tand = case['SM_reflectance']#y in array, 
+    tand = case['SM_Reflectance']
     print("old min/max are",tand.min(), tand.max())
     tand =  (np.clip(tand, 0, 100)) / 100 #adjuates for any over 100% reflectance (ie  city lights) and also makes 0-1 vs 0-100
     print("new min/max are",tand.min(), tand.max())
@@ -98,7 +98,7 @@ def FNN_train(args):
         PREDICTORS =[b for b in all_predictors if b in case]
         n_input = len(PREDICTORS)
         print("n_inputs is ", n_input, PREDICTORS) #hardcoded need to fix
-    PREDICTAND = ['SM_reflectance']
+    PREDICTAND = ['SM_Reflectance']
     print("my predictand is", PREDICTAND)
     print("my predictors are", PREDICTORS)
     TORS, TAND, ts, rs = set_up(case, PREDICTORS)
@@ -109,14 +109,14 @@ def FNN_train(args):
                          
     #history = model.fit(x, y, validation_split=0.30, epochs=n_epochs, batch_size=128)
     # number of epochs to train 
-    n_epochs = 10
+    n_epochs = 40
     #batch size, # patches before update small=finer resolution/> time may get in a minumum, large < time may jump a minimum
-    bs = 512
+    bs = 1024
     history = model.fit(TORS_train, TAND_train,validation_data =(TORS_test,TAND_test), epochs=n_epochs, batch_size=bs)
 
     log.info(f'I am now saving the model')
     made =time.strftime("%Y-%m-%dT%H%M")
-    model.save(f'M{made}_FNN_{n_epochs}epochs_{bs}bs_{PREDICTORS[0]}_{args.npz_path[:-4]}')
+    model.save(f'M{made}_FNN_{n_epochs}epochs_{bs}bs_ALLGOES_{args.npz_path[:-4]}')
     log.info(f'I saved the model')
 
     #save the history as a text file

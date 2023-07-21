@@ -34,8 +34,48 @@ def basic_stats(dic, casename):
             
         else:
             print(f'{channel} min/med/max/mean/std {x.min():.2f}/{np.median(x):.2f}/{x.max():.2f}/{x.mean():.2f}/{x.std():.2f}')
- 
- 
+    #Mchannels = [c for c in dic if c.startswith("M")]
+    #DNBchannels = [c for c in dic if not c.startswith("M")]
+    #Mcols = [dic[c].flatten() for c in Mchannels]
+    #DNBcols= [dic[c].flatten() for c in DNBchannels]
+    #logDNBcols = [np.log10(A) for A in DNBcols]
+    #boxplot
+    # figure related code
+    #fig = plt.figure()
+    #fig.suptitle(f' Mband Data Distributions for Case {casename}', fontsize=14, fontweight='bold')
+    #ax = fig.add_subplot(111)
+    #ax.boxplot(Mcols,labels=Mchannels, sym='' )
+    #ax.set_title('axes title')
+    #ax.set_xlabel('Channels') #xlabel
+    #ax.set_ylabel('Brightness Temperatures') #ylabel
+#   plt.show()
+    #plt.savefig(f"{casename}_Mband_boxplot.png", bbox_inches='tight', dpi=500)#adjust better path later and name
+
+    # figure related code
+    #fig = plt.figure()
+    #fig.suptitle(f' Radiance Data Distributions for Case {casename}', fontsize=14, fontweight='bold')
+    #ax = fig.add_subplot(111)
+    #ax.boxplot(DNBcols,labels=DNBchannels, sym='' )
+    #ax.set_title('axes title')
+    #ax.set_xlabel('Channels') #xlabel
+    #ax.set_ylabel('Radiances') #ylabel
+#   plt.show()
+    #plt.savefig(f"{casename}_DNB_boxplot.png", bbox_inches='tight', dpi=500)#adjust better path later and name
+    
+    # figure related code
+    #fig = plt.figure()
+    #fig.suptitle(f' Log Radiance Data Distributions for Case {casename}', fontsize=14, fontweight='bold')
+    #ax = fig.add_subplot(111)
+    #ax.boxplot(logDNBcols,labels=DNBchannels, sym='' )
+    #ax.set_title('axes title')
+    #ax.set_xlabel('Channels') #xlabel
+    #ax.set_ylabel('Radiances') #ylabel
+#   plt.show()
+    #plt.savefig(f"{casename}_logDNB_boxplot.png", bbox_inches='tight', dpi=500)#adjust better path later and na
+    
+    #violin plots
+    #plt.violinplot(cols, showextrema=False);
+    
 ###basic historgram/PDFs of data ( maybe go in the same code above?)    
     
   #helper function for plotting histogram and PDFs #need to readjsut the inputs
@@ -61,17 +101,17 @@ def plotdata(array1, array2):
     hY1 = np.histogram(Y1,xbins)
     hY2 = np.histogram(Y2,xbins)
 
-    #plt.xlabel('value')
-    #plt.ylabel('counts')
+    plt.xlabel('value')
+    plt.ylabel('counts')
 
-    #plt.bar(hY1[1][:-1],hY1[0],edgecolor = 'r', color = [], width = .2, label = 'truth', linewidth = 2)
-    #plt.bar(hY2[1][:-1],hY2[0],edgecolor = 'b', color = [], width = .2, label = 'MLR', linewidth = 2)
+    plt.bar(hY1[1][:-1],hY1[0],edgecolor = 'r', color = [], width = .2, label = 'truth', linewidth = 2)
+    plt.bar(hY2[1][:-1],hY2[0],edgecolor = 'b', color = [], width = .2, label = 'MLR', linewidth = 2)
    
-    #plt.legend()
-    #plt.title( 'by count')
-    #plt.savefig("fitted_MLR_histogram2020AOI18.png")
+    plt.legend()
+    plt.title( 'by count')
+    plt.savefig("fitted_MLR_histogram2020AOI18.png")
     #plt.show()
-    #plt.close()
+    plt.close()
     
     #make as PDF value 1
     plt.figure()
@@ -85,7 +125,7 @@ def plotdata(array1, array2):
     plt.ylabel('frequency')
     plt.title(' PDFs')
     plt.legend()
-    plt.savefig("fitted_FNN_PDF2020.png")
+    plt.savefig("fitted_MLR_PDF2020AOI18.png")
     #plt.show()
     plt.close()  
 
@@ -114,7 +154,7 @@ def plotdata2(array1, array2, channel_name, figdir, nick):
    
     plt.legend()
     plt.title(channel_name + ' by count')
-    plt.savefig(figdir / f"fitted_{channel_name}_FNN_histogram.png")
+    plt.savefig(figdir / f"fitted_{channel_name}_MLR_histogram.png")
     #plt.show()
     plt.close()
     
@@ -130,7 +170,7 @@ def plotdata2(array1, array2, channel_name, figdir, nick):
     plt.ylabel('frequency')
     plt.title(channel_name + ' PDFs')
     plt.legend()
-    plt.savefig("fitted_FNN_PDF_2020.png")
+    plt.savefig("fitted_MLR_PDF.png")
     #plt.show()
     plt.close()  
                      
@@ -152,8 +192,8 @@ def xy_relations(array1, array2):
     
     data1 = y_true
     data2 = y_pred
-    
-    #calcualte the coorelation coffecticent
+
+    #calcualte the coorelaiton coffecticent
     from numpy import cov
 
     # calculate covariance matrix
@@ -172,22 +212,8 @@ def xy_relations(array1, array2):
     from numpy import corrcoef
     COVAR = corrcoef(data1, data2)
     print("COVAR values for DNB and MLdata are", COVAR)
-        #need to save all of this in a file to reference later
-    write_stats(f"M{made}_FNN_model_stats_{args.npz_path[:-4]}", args.npz_path, CC, MSE, MAE, Explained_var, R2)
-
     
-    
-def write_stats(path, inputfile, CC, MSE, MAE, Explained_var, R2):
-    with open (path, "w") as f:
-        print(inputfile, file =f)
-        print(CC)
-        print(MSE)
-        print(MAE)
-        print(Explained_var)
-        print(R2)  
-        print(file =f)
-        
-        write_stats(f"M{made}_FNN_model_stats_{args.npz_path[:-4]}", args.npz_path, CC, MSE, MAE, Explained_var, R2)
+    #need to save all of this in a file to reference later
     
 def cloudfree(truths):
     CLOUD = truths['DNB_log_FMN'].flatten()>0.5
@@ -226,7 +252,49 @@ def cloudfree(truths):
 
 
 
+#helper functions for  COLE drawing
+def show_byte_img(arr, name='temp.png', **args):
+    clip_lo, clip_hi = np.array([np.sum(arr < 0), np.sum(arr > 256)]) * 100 / arr.size
+    #print(f'clipping low/high: {clip_lo:.1f}% {clip_hi:.1f}%')
+    b = arr.clip(min=0, max=255).astype('uint8')
+    Image.fromarray(b).save(name)
+    #dis.display(dis.Image(name, **args))
 
+def standardize(arr, mean=150, std_dev=50, invert=1):
+    norm = (arr - arr.mean()) / arr.std()
+    return (norm * invert * std_dev) + mean
+
+def scale(arr, percent_tail=2, percent_top=None, invert=False):
+    left, right = (percent_tail/2, percent_tail/2) if percent_top is None \
+                  else (percent_tail, percent_top)
+    norm = (arr - arr.mean()) / arr.std()
+    normi = norm * (1 if not invert else -1)
+    sort_arr = np.sort(normi.flatten())
+    left, right = int(sort_arr.size * left / 100), int(sort_arr.size * right / 100)
+    #print(f'left={left} right={right}')
+    lo, hi = sort_arr[left], sort_arr[-(1 + right)]
+    #print(lo, hi)
+    byte_scale = 256 / (hi - lo)
+    offset = 0 - lo * byte_scale
+    #print(f'byte_scale={byte_scale:.2f} offset={offset:.2f}')
+    return (normi * byte_scale) + offset
+
+# #drawmy COLE data
+def mkIMG ():
+    import pathlib
+    p = pathlib.Path("IMAGES")
+    p.mkdir(exist_ok = True)
+    return p
+    
+def draw_COLE(data_dic, name): 
+    imagedir = mkIMG()
+    # TORS9999 = np.nan_to_num(TORS, copy=True, nan=9999, posinf=None, neginf=None)
+    for i in range(len(data_dic['M12'])): #patches
+        print(f"starting COLe pics on patch {i}")
+        for label in data_dic:
+            image_array = data_dic[label][i]
+            p = imagedir / f'{name}_{label}_{i}.png'
+            show_byte_img(scale(image_array), name = str(p))
                 
 def colordiff(data_dic, name):
     imagedir = mkIMG()
@@ -264,9 +332,9 @@ def hex_plt(x,y):
     #print(f'number of data points is {sample_mx}')
     print(f'number of data points')
     print(len(x))
-    plt.hexbin(x, y, edgecolors=None, label='DNB', bins=100)#, gridsize = 50) # alpha =.002,
-    plt.xlabel('X value = Truth DNB lunar reflectance')
-    plt.ylabel('Y value = ML DNB lunar reflectance')
+    plt.hexbin(x, y, edgecolors=None, label='DNB', bins=1000)#, gridsize = 50) # alpha =.002,
+    plt.xlabel('X value = Truth DNB')
+    plt.ylabel('Y value = ML DNB')
     plt.legend()
     plt.title('True DNB Reflectance vs ML Reflectance for Full Moon')
     plt.colorbar()
@@ -274,7 +342,7 @@ def hex_plt(x,y):
 
     plt.plot(x, y)
     fig = plt.gcf()
-    fig.savefig('hexplot2020.jpg')
+    fig.savefig('hexplot2019AIO50_GSunk.jpg')
 
 # #density scatter plot for larger datsets
 def density_scatter(x, y, ax=None, sort=True, bins=1000, **kwargs):
@@ -303,20 +371,84 @@ def density_scatter(x, y, ax=None, sort=True, bins=1000, **kwargs):
     return ax
                            
                 
+###### making ERF data
+            
+def ERF(array1, array2):
+    #ERF applications for image translation and stats
+    log.info(f'starting the ERF processes')
+    
+    #load raw radiance values 
+    DNB = array1.flatten() #DNB #y_true
+    DNB_ML  = array2.flatten() #ML #y_pred
 
+    # take the radiances and use the ERF display image scale
+    Rmax= 1.26e-10 
+    Rmin=2e-11
+
+    #ERF stats
+    ERFimage_truth=  255 * np.sqrt(np.abs((DNB[:]-Rmin)/(Rmax - Rmin)))
+    x= ERFimage_truth
+    print(f'ERF DNB min/med/max/mean/std {x.min():.2f}/{np.median(x):.2f}/{x.max():.2f}/{x.mean():.2f}/{x.std():.2f}')
+
+    ERFimage_ML=  255 * np.sqrt(np.abs((DNB_ML[:]-Rmin)/(Rmax - Rmin)))
+    print(f'ERF ML_DNB min/med/max/mean/std {x.min():.2f}/{np.median(x):.2f}/{x.max():.2f}/{x.mean():.2f}/{x.std():.2f}')
+        
+    x=ERFimage_truth#[:2000]
+    y=ERFimage_ML#[:2000]
+    print(x.shape, y.shape)
+    
+    #calculate basic relations for ERF values
+    print("calculating relations for ERF data")
+    xy_relations(x.flatten(),y.flatten())
+    
+    #plotit(x,y)
+    # plotting one image
+
+    #img = x[0]
+    #imgplot = plt.imshow(img, cmap='gray')
+    #plt.title('ERF imagery truth')
+    #plt.colorbar()
+    #plt.show()
+
+    #img2 = y[0]
+    #imgplot= plt.imshow(img2, cmap='gray')
+    #plt.title("ERF imagery ML")
+    #plt.colorbar()
+    #plt.show()
+#     %%
 
 def plotit(truth_array,ML_array):
     for i in range(len(truth_array)):
         x=truth_array[i]
         y=ML_array[i]
-      
+        #a=np.linspace(0,4000,100)
+        #b=a
+        #plt.plot(x,y)
+        #plt.show()
+        #print ('This is the end of Truth plot using paper full moon max/min')
+
+        #plt.figure()
+        #plt.plot(x,y,'o', markersize =1, color='black')
+        #plt.xlabel('Truth')
+        #plt.ylabel('ML_predicted')
+        #plt.plot(a,b, 'r--', label='perfect')
+        #plt.legend()
+        #plt.title('DNB Truth vs ML DNB ERF scaled BVIs' )
+        #plt.show()
+        #log.info(f'saving comparison plot {i}')
+        #plt.savefig(f"comparison_at_{i}.png") 
+        #plt.clf()
+        #plt.close()
+        #log.info(f'done saving comparison plot {i}')
+
+    
         img = x
         imgplot = plt.imshow(img, cmap='gray', vmin =0, vmax=1)
 
         plt.title('DNB Reflectance truth')
         plt.colorbar()
         #plt.show()
-        plt.savefig(f"DNB_truth_2020_AOI_0_30at_{i}.png") 
+        plt.savefig(f"DNB_truth_2020_AOI_18at_{i}.png") 
         plt.clf()
         plt.close()
 
@@ -326,26 +458,26 @@ def plotit(truth_array,ML_array):
         plt.title("DNB Reflectance ML")
         plt.colorbar()
         #plt.show()
-        plt.savefig(f"DNB_Ref_ML_2020_AOI_0_30at_{i}.png") 
+        plt.savefig(f"DNB_Ref_ML_2020_AOI_18at_{i}.png") 
         plt.clf()
         plt.close()
 
                 
 
+# ###hexbins
 
-#hexbin instead of scatter plot
+# #hexbin instead of scatter plot
 
 def hexy_plt (x,y):
     #plt.hexbin(x, y, C=None, gridsize=100, bins=None, xscale='linear', yscale='linear', extent=None, cmap=None, norm=None, 
 #vmin=None, vmax=None, alpha=None, linewidths=None, edgecolors='face', reduce_C_function=<function mean>, mincnt=None, marginals=False, *, data=None, **kwargs)
     plt.hexbin(x,y, edgecolors = None, label='DNB')#alpha =.002,
-    plt.xlabel('X value = Truth DNB Lunar Reflectance')
-    plt.ylabel('Y value = ML DNB Lunar Reflectance')
+    plt.xlabel('X value = Truth DNB')
+    plt.ylabel('Y value = ML DNB')
     plt.legend()
     plt.title('truth DNB vs ML DNB for Full Moon Norm Radiances')
     plt.colorbar()
     plt.show()
-    plt.savefig(f"hexy2020_.png") 
 
 
 # #density scatter plot for larger datsets
@@ -373,19 +505,3 @@ def density_scatter( x , y, ax = None, sort = True, bins = 1000, **kwargs )   :
     cbar.ax.set_ylabel('Density')
     #add labels
     return ax
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
